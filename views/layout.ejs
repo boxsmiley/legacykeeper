@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'LegacyKeeper' %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <% if (user) { %>
+    <nav class="navbar">
+      <div class="container">
+        <a href="/dashboard" class="navbar-brand">LegacyKeeper</a>
+        <ul class="navbar-nav">
+          <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
+          <li><a href="/documents" class="nav-link">Documents</a></li>
+          <li><a href="/contacts" class="nav-link">Contacts</a></li>
+          <li><a href="/contact-groups" class="nav-link">Groups</a></li>
+          <li><a href="/digital-assets" class="nav-link">Digital Assets</a></li>
+          <li><a href="/financial-assets" class="nav-link">Financial Assets</a></li>
+          <% if (user.Role === 'admin') { %>
+            <li><a href="/admin/users" class="nav-link">Admin</a></li>
+          <% } %>
+          <li><span class="nav-link">Welcome, <%= user.FirstName %></span></li>
+          <li><a href="/logout" class="nav-link">Logout</a></li>
+        </ul>
+      </div>
+    </nav>
+  <% } %>
+
+  <div class="container">
+    <% if (success_msg && success_msg.length > 0) { %>
+      <div class="alert alert-success"><%= success_msg %></div>
+    <% } %>
+    <% if (error_msg && error_msg.length > 0) { %>
+      <div class="alert alert-error"><%= error_msg %></div>
+    <% } %>
+    <% if (error && error.length > 0) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <%- body %>
+  </div>
+</body>
+</html>

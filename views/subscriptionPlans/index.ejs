@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription Plans - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="page-header">
+      <h1 class="page-title">Subscription Plans</h1>
+      <a href="/subscription-plans/new" class="btn btn-primary">Create New Plan</a>
+    </div>
+
+    <div class="table">
+      <table>
+        <thead>
+          <tr>
+            <th>Level</th>
+            <th>Monthly Price</th>
+            <th>Annual Price</th>
+            <th>Storage (GB)</th>
+            <th>Work Units</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (plans.length === 0) { %>
+            <tr>
+              <td colspan="6" style="text-align: center;">No plans created yet</td>
+            </tr>
+          <% } else { %>
+            <% plans.forEach(plan => { %>
+              <tr>
+                <td><%= plan.SubscriptionLevel %></td>
+                <td>$<%= plan.PriceMonthly %></td>
+                <td>$<%= plan.PriceAnnual %></td>
+                <td><%= plan.StorageLimitGB %> GB</td>
+                <td><%= plan.WorkUnitLimit %></td>
+                <td>
+                  <div class="action-buttons">
+                    <a href="/subscription-plans/<%= plan.UniqueId %>/edit" class="btn btn-secondary btn-small">Edit</a>
+                    <form action="/subscription-plans/<%= plan.UniqueId %>?_method=DELETE" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure?');">
+                      <button type="submit" class="btn btn-danger btn-small">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

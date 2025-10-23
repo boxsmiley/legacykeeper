@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    #map {
+      height: 400px;
+      width: 100%;
+      border-radius: 10px;
+      margin-top: 1rem;
+    }
+    .user-profile-card {
+      background: var(--bg-secondary);
+      border-radius: 10px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      border: 1px solid var(--border-color);
+    }
+    .user-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--accent-primary);
+      flex-shrink: 0;
+    }
+    .user-avatar-placeholder {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      font-weight: bold;
+      color: white;
+      border: 3px solid var(--accent-primary);
+      flex-shrink: 0;
+    }
+    .user-info {
+      flex: 1;
+    }
+    .user-info h2 {
+      margin: 0 0 0.5rem 0;
+      color: var(--text-primary);
+      font-size: 1.8rem;
+    }
+    .user-info p {
+      margin: 0.25rem 0;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/dashboard" class="navbar-brand">LegacyKeeper</a>
+      <ul class="navbar-nav">
+        <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
+        <li><a href="/documents" class="nav-link">Documents</a></li>
+        <li><a href="/contacts" class="nav-link">Contacts</a></li>
+        <li><a href="/contact-groups" class="nav-link">Groups</a></li>
+        <li><a href="/digital-assets" class="nav-link">Digital Assets</a></li>
+        <li><a href="/financial-assets" class="nav-link">Financial Assets</a></li>
+        <% if (user.Role === 'admin') { %>
+          <li><a href="/admin/users" class="nav-link">Admin</a></li>
+        <% } %>
+        <li><span class="nav-link">Welcome, <%= user.FirstName %></span></li>
+        <li><a href="/logout" class="nav-link">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <% if (typeof success_msg !== 'undefined' && success_msg.length > 0) { %>
+      <div class="alert alert-success"><%= success_msg %></div>
+    <% } %>
+
+    <div class="page-header">
+      <h1 class="page-title">Dashboard</h1>
+    </div>
+
+    <!-- User Profile Card with Avatar -->
+    <div class="user-profile-card">
+      <% if (userDetails && userDetails.ProfilePicture) { %>
+        <img src="<%= userDetails.ProfilePicture %>" alt="Profile Picture" class="user-avatar">
+      <% } else { %>
+        <div class="user-avatar-placeholder">
+          <%= userDetails ? (userDetails.FirstName.charAt(0) + userDetails.LastName.charAt(0)) : 'U' %>
+        </div>
+      <% } %>
+      <div class="user-info">
+        <h2><%= userDetails ? (userDetails.FirstName + (userDetails.MiddleName ? ' ' + userDetails.MiddleName : '') + ' ' + userDetails.LastName) : 'User' %></h2>
+        <p><strong>Email:</strong> <%= userDetails ? userDetails.Email : '' %></p>
+        <% if (userDetails && userDetails.PhoneNumber) { %>
+          <p><strong>Phone:</strong> <%= userDetails.PhoneNumber %></p>
+        <% } %>
+        <p><strong>Account Status:</strong> <span style="color: <%= userDetails && userDetails.AccountStatus === 'active' ? 'var(--success-color)' : 'var(--warning-color)' %>"><%= userDetails ? userDetails.AccountStatus : 'Unknown' %></span></p>
+        <p><strong>Role:</strong> <%= userDetails ? userDetails.Role : 'user' %></p>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number"><%= stats.documents %></div>
+        <div class="stat-label">Documents</div>
+        <a href="/documents" class="btn btn-primary btn-small" style="margin-top: 1rem;">Manage</a>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-number"><%= stats.contacts %></div>
+        <div class="stat-label">Contacts</div>
+        <a href="/contacts" class="btn btn-primary btn-small" style="margin-top: 1rem;">Manage</a>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-number"><%= stats.contactGroups %></div>
+        <div class="stat-label">Contact Groups</div>
+        <a href="/contact-groups" class="btn btn-primary btn-small" style="margin-top: 1rem;">Manage</a>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-number"><%= stats.digitalAssets %></div>
+        <div class="stat-label">Digital Assets</div>
+        <a href="/digital-assets" class="btn btn-primary btn-small" style="margin-top: 1rem;">Manage</a>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-number"><%= stats.financialAssets %></div>
+        <div class="stat-label">Financial Assets</div>
+        <a href="/financial-assets" class="btn btn-primary btn-small" style="margin-top: 1rem;">Manage</a>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-number"><%= stats.legacyEntries %></div>
+        <div class="stat-label">Legacy Entries</div>
+        <a href="/legacy-entries" class="btn btn-primary btn-small" style="margin-top: 1rem;">Manage</a>
+      </div>
+    </div>
+
+    <% if (userDetails && userDetails.MailingAddress) { %>
+      <div class="card">
+        <h2 class="card-title">Your Location</h2>
+        <div class="card-content">
+          <p><strong>Address:</strong> <%= userDetails.MailingAddress %></p>
+          <div id="map"></div>
+        </div>
+      </div>
+    <% } %>
+
+    <div class="card">
+      <h2 class="card-title">Welcome to LegacyKeeper</h2>
+      <div class="card-content">
+        <p>Manage your digital legacy with ease. Use the navigation above to access your:</p>
+        <ul style="margin-left: 2rem; margin-top: 1rem;">
+          <li>Documents and important files</li>
+          <li>Personal and professional contacts</li>
+          <li>Digital assets and online accounts</li>
+          <li>Financial assets and accounts</li>
+          <li>Legacy messages and stories</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <% if (userDetails && userDetails.MailingAddress) { %>
+    <script>
+      // Initialize the map
+      const map = L.map('map').setView([37.7749, -122.4194], 13); // Default to San Francisco
+
+      // Add OpenStreetMap tiles
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(map);
+
+      // Geocode the address using Nominatim (OpenStreetMap's geocoding service)
+      const address = '<%= userDetails.MailingAddress.replace(/'/g, "\\'") %>';
+
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data && data.length > 0) {
+            const lat = parseFloat(data[0].lat);
+            const lon = parseFloat(data[0].lon);
+
+            // Center map on the address
+            map.setView([lat, lon], 15);
+
+            // Add a marker
+            L.marker([lat, lon])
+              .addTo(map)
+              .bindPopup('<b>Your Location</b><br>' + address)
+              .openPopup();
+          } else {
+            // If geocoding fails, show a message
+            document.getElementById('map').innerHTML =
+              '<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: var(--bg-tertiary); border-radius: 10px;">' +
+              '<p style="color: var(--text-secondary);">Unable to locate address on map. Please update your address in your profile.</p>' +
+              '</div>';
+          }
+        })
+        .catch(error => {
+          console.error('Geocoding error:', error);
+          document.getElementById('map').innerHTML =
+            '<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: var(--bg-tertiary); border-radius: 10px;">' +
+            '<p style="color: var(--text-secondary);">Map could not be loaded. Please check your internet connection.</p>' +
+            '</div>';
+        });
+    </script>
+  <% } %>
+</body>
+</html>

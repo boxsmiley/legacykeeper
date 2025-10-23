@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= action === 'create' ? 'Add' : 'Edit' %> Contact - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <div class="form-container">
+      <h2 class="card-title"><%= action === 'create' ? 'Add New Contact' : 'Edit Contact' %></h2>
+
+      <form action="<%= action === 'create' ? '/contacts' : '/contacts/' + contact.UniqueId + '?_method=PUT' %>" method="POST">
+        <div class="form-group">
+          <label for="FirstName">First Name</label>
+          <input type="text" id="FirstName" name="FirstName" class="form-control" value="<%= contact ? contact.FirstName : '' %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="LastName">Last Name</label>
+          <input type="text" id="LastName" name="LastName" class="form-control" value="<%= contact ? contact.LastName : '' %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="Email">Email</label>
+          <input type="email" id="Email" name="Email" class="form-control" value="<%= contact ? contact.Email : '' %>">
+        </div>
+
+        <div class="form-group">
+          <label for="PhoneNumber">Phone Number</label>
+          <input type="tel" id="PhoneNumber" name="PhoneNumber" class="form-control" value="<%= contact ? contact.PhoneNumber : '' %>">
+        </div>
+
+        <div class="form-group">
+          <label for="Address">Address</label>
+          <textarea id="Address" name="Address" class="form-control"><%= contact ? contact.Address : '' %></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="Relationship">Relationship</label>
+          <select id="Relationship" name="Relationship" class="form-control">
+            <option value="">Select Relationship</option>
+            <option value="Family" <%= contact && contact.Relationship === 'Family' ? 'selected' : '' %>>Family</option>
+            <option value="Friend" <%= contact && contact.Relationship === 'Friend' ? 'selected' : '' %>>Friend</option>
+            <option value="Professional" <%= contact && contact.Relationship === 'Professional' ? 'selected' : '' %>>Professional</option>
+            <option value="Executor" <%= contact && contact.Relationship === 'Executor' ? 'selected' : '' %>>Executor</option>
+            <option value="Other" <%= contact && contact.Relationship === 'Other' ? 'selected' : '' %>>Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="Notes">Notes</label>
+          <textarea id="Notes" name="Notes" class="form-control"><%= contact ? contact.Notes : '' %></textarea>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+          <button type="submit" class="btn btn-primary"><%= action === 'create' ? 'Add' : 'Update' %> Contact</button>
+          <a href="/contacts" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audit Logs - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="page-header">
+      <h1 class="page-title">Activity Log</h1>
+    </div>
+
+    <div class="table">
+      <table>
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Action</th>
+            <th>Details</th>
+            <th>IP Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (auditLogs.length === 0) { %>
+            <tr>
+              <td colspan="4" style="text-align: center;">No activity logs found</td>
+            </tr>
+          <% } else { %>
+            <% auditLogs.forEach(log => { %>
+              <tr>
+                <td><%= new Date(log.Timestamp).toLocaleString() %></td>
+                <td><%= log.ActionType %></td>
+                <td><%= log.Details %></td>
+                <td><%= log.IPAddress || 'N/A' %></td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= action === 'create' ? 'Add' : 'Edit' %> Contact Group - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <div class="form-container">
+      <h2 class="card-title"><%= action === 'create' ? 'Add New Contact Group' : 'Edit Contact Group' %></h2>
+
+      <form action="<%= action === 'create' ? '/contact-groups' : '/contact-groups/' + contactGroup.UniqueId + '?_method=PUT' %>" method="POST">
+        <div class="form-group">
+          <label for="GroupName">Group Name</label>
+          <input type="text" id="GroupName" name="GroupName" class="form-control" value="<%= contactGroup ? contactGroup.GroupName : '' %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="Description">Description</label>
+          <textarea id="Description" name="Description" class="form-control"><%= contactGroup ? contactGroup.Description : '' %></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="Members">Select Members (hold Ctrl/Cmd to select multiple)</label>
+          <select id="Members" name="Members" class="form-control" multiple style="height: 200px;">
+            <% contacts.forEach(contact => { %>
+              <option value="<%= contact.UniqueId %>"
+                <%= contactGroup && contactGroup.Members && contactGroup.Members.includes(contact.UniqueId) ? 'selected' : '' %>>
+                <%= contact.FirstName %> <%= contact.LastName %>
+              </option>
+            <% }); %>
+          </select>
+          <small style="color: var(--text-secondary);">Hold Ctrl (Windows) or Cmd (Mac) to select multiple contacts</small>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+          <button type="submit" class="btn btn-primary"><%= action === 'create' ? 'Create' : 'Update' %> Group</button>
+          <a href="/contact-groups" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

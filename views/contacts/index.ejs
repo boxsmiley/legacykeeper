@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contacts - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="page-header">
+      <h1 class="page-title">My Contacts</h1>
+      <a href="/contacts/new" class="btn btn-primary">Add New Contact</a>
+    </div>
+
+    <div class="table">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Relationship</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (contacts.length === 0) { %>
+            <tr>
+              <td colspan="5" style="text-align: center;">No contacts found. Add your first contact!</td>
+            </tr>
+          <% } else { %>
+            <% contacts.forEach(contact => { %>
+              <tr>
+                <td><%= contact.FirstName %> <%= contact.LastName %></td>
+                <td><%= contact.Email || 'N/A' %></td>
+                <td><%= contact.PhoneNumber || 'N/A' %></td>
+                <td><%= contact.Relationship || 'N/A' %></td>
+                <td>
+                  <div class="action-buttons">
+                    <a href="/contacts/<%= contact.UniqueId %>/edit" class="btn btn-secondary btn-small">Edit</a>
+                    <form action="/contacts/<%= contact.UniqueId %>?_method=DELETE" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure?');">
+                      <button type="submit" class="btn btn-danger btn-small">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

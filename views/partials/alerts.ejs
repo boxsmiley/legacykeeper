@@ -1,0 +1,9 @@
+<% if (typeof success_msg !== 'undefined' && success_msg && success_msg.length > 0) { %>
+  <div class="alert alert-success"><%= success_msg %></div>
+<% } %>
+<% if (typeof error_msg !== 'undefined' && error_msg && error_msg.length > 0) { %>
+  <div class="alert alert-error"><%= error_msg %></div>
+<% } %>
+<% if (typeof error !== 'undefined' && error && error.length > 0) { %>
+  <div class="alert alert-error"><%= error %></div>
+<% } %>

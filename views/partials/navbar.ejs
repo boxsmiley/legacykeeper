@@ -1,0 +1,33 @@
+<nav class="navbar">
+  <div class="container">
+    <a href="/dashboard" class="navbar-brand">LegacyKeeper</a>
+    <ul class="navbar-nav">
+      <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
+      <li><a href="/documents" class="nav-link">Documents</a></li>
+      <li><a href="/contacts" class="nav-link">Contacts</a></li>
+      <li><a href="/contact-groups" class="nav-link">Groups</a></li>
+      <li><a href="/digital-assets" class="nav-link">Digital</a></li>
+      <li><a href="/financial-assets" class="nav-link">Financial</a></li>
+      <li><a href="/legacy-entries" class="nav-link">Legacy</a></li>
+      <li><a href="/subscriptions" class="nav-link">Plans</a></li>
+      <li><a href="/audit-logs" class="nav-link">Activity</a></li>
+      <% if (typeof user !== 'undefined' && user && user.Role === 'admin') { %>
+        <li><a href="/admin/users" class="nav-link">Users</a></li>
+        <li><a href="/subscription-plans" class="nav-link">Pricing</a></li>
+      <% } %>
+      <% if (typeof user !== 'undefined' && user) { %>
+        <li class="nav-user-section">
+          <% if (user.ProfilePicture) { %>
+            <img src="<%= user.ProfilePicture %>" alt="Avatar" class="nav-avatar">
+          <% } else { %>
+            <div class="nav-avatar-placeholder">
+              <%= user.FirstName.charAt(0) %><%= user.LastName ? user.LastName.charAt(0) : '' %>
+            </div>
+          <% } %>
+          <span class="nav-link"><%= user.FirstName %></span>
+        </li>
+        <li><a href="/logout" class="nav-link">Logout</a></li>
+      <% } %>
+    </ul>
+  </div>
+</nav>

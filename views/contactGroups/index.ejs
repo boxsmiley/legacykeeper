@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Groups - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="page-header">
+      <h1 class="page-title">Contact Groups</h1>
+      <a href="/contact-groups/new" class="btn btn-primary">Add New Group</a>
+    </div>
+
+    <div class="table">
+      <table>
+        <thead>
+          <tr>
+            <th>Group Name</th>
+            <th>Description</th>
+            <th>Members</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (contactGroups.length === 0) { %>
+            <tr>
+              <td colspan="5" style="text-align: center;">No contact groups found. Create your first group!</td>
+            </tr>
+          <% } else { %>
+            <% contactGroups.forEach(group => { %>
+              <tr>
+                <td><%= group.GroupName %></td>
+                <td><%= group.Description || 'N/A' %></td>
+                <td><%= group.Members ? group.Members.length : 0 %></td>
+                <td><%= new Date(group.CreatedDate).toLocaleDateString() %></td>
+                <td>
+                  <div class="action-buttons">
+                    <a href="/contact-groups/<%= group.UniqueId %>/edit" class="btn btn-secondary btn-small">Edit</a>
+                    <form action="/contact-groups/<%= group.UniqueId %>?_method=DELETE" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure?');">
+                      <button type="submit" class="btn btn-danger btn-small">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

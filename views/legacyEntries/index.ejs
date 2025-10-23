@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legacy Entries - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="page-header">
+      <h1 class="page-title">Legacy Entries</h1>
+      <a href="/legacy-entries/new" class="btn btn-primary">Add New Entry</a>
+    </div>
+
+    <div class="table">
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Content Preview</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (legacyEntries.length === 0) { %>
+            <tr>
+              <td colspan="5" style="text-align: center;">No legacy entries found. Create your first entry!</td>
+            </tr>
+          <% } else { %>
+            <% legacyEntries.forEach(entry => { %>
+              <tr>
+                <td><%= entry.EntryTitle %></td>
+                <td><%= entry.LegacyEntryType %></td>
+                <td><%= entry.ContentText ? entry.ContentText.substring(0, 100) + '...' : 'N/A' %></td>
+                <td><%= new Date(entry.DateCreated).toLocaleDateString() %></td>
+                <td>
+                  <div class="action-buttons">
+                    <a href="/legacy-entries/<%= entry.UniqueId %>/edit" class="btn btn-secondary btn-small">Edit</a>
+                    <form action="/legacy-entries/<%= entry.UniqueId %>?_method=DELETE" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure?');">
+                      <button type="submit" class="btn btn-danger btn-small">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= action === 'create' ? 'Create' : 'Edit' %> User - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="form-container">
+      <h2 class="card-title"><%= action === 'create' ? 'Create New User' : 'Edit User' %></h2>
+
+      <form action="<%= action === 'create' ? '/admin/users' : '/admin/users/' + user.UniqueId + '?_method=PUT' %>" method="POST" enctype="multipart/form-data">
+        <h3 style="color: var(--accent-primary); margin-bottom: 1rem;">Basic Information</h3>
+
+        <div class="form-group">
+          <label for="FirstName">First Name</label>
+          <input type="text" id="FirstName" name="FirstName" class="form-control" value="<%= user ? user.FirstName : '' %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="MiddleName">Middle Name</label>
+          <input type="text" id="MiddleName" name="MiddleName" class="form-control" value="<%= user ? user.MiddleName : '' %>">
+        </div>
+
+        <div class="form-group">
+          <label for="LastName">Last Name</label>
+          <input type="text" id="LastName" name="LastName" class="form-control" value="<%= user ? user.LastName : '' %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="Email">Email</label>
+          <input type="email" id="Email" name="Email" class="form-control" value="<%= user ? user.Email : '' %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="Password">Password <%= action === 'edit' ? '(leave blank to keep current)' : '' %></label>
+          <input type="password" id="Password" name="Password" class="form-control" <%= action === 'create' ? 'required' : '' %>>
+        </div>
+
+        <div class="form-group">
+          <label for="DateOfBirth">Date of Birth</label>
+          <input type="date" id="DateOfBirth" name="DateOfBirth" class="form-control" value="<%= user ? user.DateOfBirth : '' %>">
+        </div>
+
+        <h3 style="color: var(--accent-primary); margin: 2rem 0 1rem;">Contact Information</h3>
+
+        <div class="form-group">
+          <label for="PhoneNumber">Phone Number</label>
+          <input type="tel" id="PhoneNumber" name="PhoneNumber" class="form-control" value="<%= user ? user.PhoneNumber : '' %>">
+        </div>
+
+        <div class="form-group">
+          <label for="MailingAddress">Mailing Address</label>
+          <textarea id="MailingAddress" name="MailingAddress" class="form-control" rows="3"><%= user ? user.MailingAddress : '' %></textarea>
+        </div>
+
+        <h3 style="color: var(--accent-primary); margin: 2rem 0 1rem;">Account Settings</h3>
+
+        <div class="form-group">
+          <label for="Role">Role</label>
+          <select id="Role" name="Role" class="form-control" required>
+            <option value="user" <%= user && user.Role === 'user' ? 'selected' : '' %>>User</option>
+            <option value="admin" <%= user && user.Role === 'admin' ? 'selected' : '' %>>Admin</option>
+            <option value="executor" <%= user && user.Role === 'executor' ? 'selected' : '' %>>Executor</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="AccountStatus">Account Status</label>
+          <select id="AccountStatus" name="AccountStatus" class="form-control" required>
+            <option value="active" <%= user && user.AccountStatus === 'active' ? 'selected' : '' %>>Active</option>
+            <option value="inactive" <%= user && user.AccountStatus === 'inactive' ? 'selected' : '' %>>Inactive</option>
+            <option value="suspended" <%= user && user.AccountStatus === 'suspended' ? 'selected' : '' %>>Suspended</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="MFA_Enabled">Multi-Factor Authentication</label>
+          <select id="MFA_Enabled" name="MFA_Enabled" class="form-control">
+            <option value="false" <%= user && user.MFA_Enabled === false ? 'selected' : '' %>>Disabled</option>
+            <option value="true" <%= user && user.MFA_Enabled === true ? 'selected' : '' %>>Enabled</option>
+          </select>
+        </div>
+
+        <h3 style="color: var(--accent-primary); margin: 2rem 0 1rem;">Additional Information</h3>
+
+        <div class="form-group">
+          <label for="SocialSecurityNumber">Social Security Number (encrypted)</label>
+          <input type="text" id="SocialSecurityNumber" name="SocialSecurityNumber" class="form-control" value="<%= user ? user.SocialSecurityNumber : '' %>" placeholder="XXX-XX-XXXX">
+          <small style="color: var(--text-secondary);">For security purposes only - will be encrypted</small>
+        </div>
+
+        <div class="form-group">
+          <label for="profilePictureFile">Profile Picture</label>
+          <input type="file" id="profilePictureFile" name="profilePictureFile" class="form-control" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
+          <small style="color: var(--text-secondary);">Upload JPG, PNG, GIF, or WebP (max 50MB)</small>
+          <% if (user && user.ProfilePicture) { %>
+            <div style="margin-top: 1rem;">
+              <img src="<%= user.ProfilePicture %>" alt="Current profile picture" style="width: 150px; height: 150px; object-fit: cover; border-radius: 10px; border: 2px solid var(--border-color);">
+              <p style="margin-top: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">Current profile picture</p>
+            </div>
+          <% } %>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+          <button type="submit" class="btn btn-primary"><%= action === 'create' ? 'Create' : 'Update' %> User</button>
+          <a href="/admin/users" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

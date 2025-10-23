@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= action === 'create' ? 'Add' : 'Edit' %> Document - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .permission-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .permission-controls button {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .permission-controls button:hover {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <div class="form-container">
+      <h2 class="card-title"><%= action === 'create' ? 'Add New Document' : 'Edit Document' %></h2>
+
+      <form action="<%= action === 'create' ? '/documents' : '/documents/' + document.UniqueId + '?_method=PUT' %>" method="POST" enctype="multipart/form-data">
+        <% if (action === 'create') { %>
+          <div class="form-group">
+            <label for="documentFile">Upload File</label>
+            <input type="file" id="documentFile" name="documentFile" class="form-control" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.zip,.rar">
+            <small style="color: var(--text-secondary);">Accepted: PDF, DOC, DOCX, TXT, XLS, XLSX, PPT, PPTX, Images, ZIP, RAR (Max 50MB)</small>
+          </div>
+        <% } %>
+
+        <% if (document && document.BubbleFile) { %>
+          <div class="form-group">
+            <label>Current File</label>
+            <div style="padding: 0.5rem; background: var(--bg-tertiary); border-radius: 5px;">
+              <%= document.FileName %> (<%= document.FileSize %>)
+              <a href="/documents/<%= document.UniqueId %>/download" class="btn btn-secondary btn-small" style="margin-left: 1rem;">Download</a>
+            </div>
+          </div>
+        <% } %>
+
+        <div class="form-group">
+          <label for="FileName">Document Name <%= action === 'create' ? '(optional, will use filename if empty)' : '' %></label>
+          <input type="text" id="FileName" name="FileName" class="form-control" value="<%= document ? document.FileName : '' %>" placeholder="My Important Document">
+        </div>
+
+        <div class="form-group">
+          <label for="DocumentType">Document Type</label>
+          <select id="DocumentType" name="DocumentType" class="form-control" required>
+            <option value="">Select Type</option>
+            <option value="Legal" <%= document && document.DocumentType === 'Legal' ? 'selected' : '' %>>Legal</option>
+            <option value="Financial" <%= document && document.DocumentType === 'Financial' ? 'selected' : '' %>>Financial</option>
+            <option value="Medical" <%= document && document.DocumentType === 'Medical' ? 'selected' : '' %>>Medical</option>
+            <option value="Personal" <%= document && document.DocumentType === 'Personal' ? 'selected' : '' %>>Personal</option>
+            <option value="Other" <%= document && document.DocumentType === 'Other' ? 'selected' : '' %>>Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="Description">Description</label>
+          <textarea id="Description" name="Description" class="form-control" rows="4"><%= document ? document.Description : '' %></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="Version">Document Version</label>
+          <input type="text" id="Version" name="Version" class="form-control" value="<%= document ? document.Version : '1.0' %>" placeholder="1.0">
+          <small style="color: var(--text-secondary);">Track version number of this document</small>
+        </div>
+
+        <div class="form-group">
+          <label for="PhysicalLocation">Physical Location</label>
+          <input type="text" id="PhysicalLocation" name="PhysicalLocation" class="form-control" value="<%= document ? document.PhysicalLocation : '' %>" placeholder="e.g., Home Safe, Office Filing Cabinet">
+          <small style="color: var(--text-secondary);">Where is the physical copy stored?</small>
+        </div>
+
+        <h3 style="color: var(--accent-primary); margin: 2rem 0 1rem;">Document Permissions</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Control who can view and access this document</p>
+
+        <div class="form-group">
+          <label>Permitted Users</label>
+          <div class="permission-controls">
+            <button type="button" onclick="selectAllUsers()">Select All</button>
+            <button type="button" onclick="deselectAllUsers()">Deselect All</button>
+          </div>
+          <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: 5px; max-height: 300px; overflow-y: auto;" id="usersContainer">
+            <% if (typeof allUsers !== 'undefined' && allUsers && allUsers.length > 0) { %>
+              <% allUsers.forEach(u => { %>
+                <div style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">
+                  <label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
+                    <input type="checkbox" name="PermittedUsers" value="<%= u.Email %>"
+                      <%= document && document.PermittedUsers && document.PermittedUsers.includes(u.Email) ? 'checked' : '' %>
+                      style="margin-right: 0.75rem; width: 18px; height: 18px; cursor: pointer;">
+                    <div style="flex: 1;">
+                      <div style="color: var(--text-primary); font-weight: 500;"><%= u.FirstName %> <%= u.LastName %></div>
+                      <div style="color: var(--text-secondary); font-size: 0.9rem;"><%= u.Email %></div>
+                    </div>
+                    <span style="padding: 0.25rem 0.5rem; background: var(--accent-primary); color: white; border-radius: 3px; font-size: 0.8rem;"><%= u.Role %></span>
+                  </label>
+                </div>
+              <% }); %>
+            <% } else { %>
+              <p style="color: var(--text-secondary); text-align: center; padding: 1rem;">No users available</p>
+            <% } %>
+          </div>
+          <small style="color: var(--text-secondary);">Select users who can access this document</small>
+        </div>
+
+        <div class="form-group">
+          <label>Permitted Contact Groups</label>
+          <div class="permission-controls">
+            <button type="button" onclick="selectAllGroups()">Select All</button>
+            <button type="button" onclick="deselectAllGroups()">Deselect All</button>
+          </div>
+          <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: 5px; max-height: 300px; overflow-y: auto;" id="groupsContainer">
+            <% if (typeof contactGroups !== 'undefined' && contactGroups && contactGroups.length > 0) { %>
+              <% contactGroups.forEach(group => { %>
+                <div style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">
+                  <label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
+                    <input type="checkbox" name="PermittedContactGroups" value="<%= group.GroupName %>"
+                      <%= document && document.PermittedContactGroups && document.PermittedContactGroups.includes(group.GroupName) ? 'checked' : '' %>
+                      style="margin-right: 0.75rem; width: 18px; height: 18px; cursor: pointer;">
+                    <div style="flex: 1;">
+                      <div style="color: var(--text-primary); font-weight: 500;"><%= group.GroupName %></div>
+                      <% if (group.GroupDescription) { %>
+                        <div style="color: var(--text-secondary); font-size: 0.9rem;"><%= group.GroupDescription %></div>
+                      <% } %>
+                    </div>
+                  </label>
+                </div>
+              <% }); %>
+            <% } else { %>
+              <p style="color: var(--text-secondary); text-align: center; padding: 1rem;">No contact groups created yet. <a href="/contact-groups/new" style="color: var(--accent-primary);">Create one now</a></p>
+            <% } %>
+          </div>
+          <small style="color: var(--text-secondary);">Select contact groups who can access this document</small>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+          <button type="submit" class="btn btn-primary"><%= action === 'create' ? 'Upload' : 'Update' %> Document</button>
+          <a href="/documents" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function selectAllUsers() {
+      const checkboxes = document.querySelectorAll('#usersContainer input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = true);
+    }
+
+    function deselectAllUsers() {
+      const checkboxes = document.querySelectorAll('#usersContainer input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = false);
+    }
+
+    function selectAllGroups() {
+      const checkboxes = document.querySelectorAll('#groupsContainer input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = true);
+    }
+
+    function deselectAllGroups() {
+      const checkboxes = document.querySelectorAll('#groupsContainer input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = false);
+    }
+  </script>
+</body>
+</html>

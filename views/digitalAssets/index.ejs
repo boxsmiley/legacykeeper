@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Assets - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="page-header">
+      <h1 class="page-title">Digital Assets</h1>
+      <a href="/digital-assets/new" class="btn btn-primary">Add New Asset</a>
+    </div>
+
+    <div class="table">
+      <table>
+        <thead>
+          <tr>
+            <th>Asset Name</th>
+            <th>Type</th>
+            <th>Login URL</th>
+            <th>Username</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (digitalAssets.length === 0) { %>
+            <tr>
+              <td colspan="5" style="text-align: center;">No digital assets found. Add your first asset!</td>
+            </tr>
+          <% } else { %>
+            <% digitalAssets.forEach(asset => { %>
+              <tr>
+                <td><%= asset.AssetName %></td>
+                <td><%= asset.AssetType %></td>
+                <td><%= asset.LoginURL ? '<a href="' + asset.LoginURL + '" target="_blank" style="color: var(--accent-primary);">Link</a>' : 'N/A' %></td>
+                <td><%= asset.UsernameIdentifier || 'N/A' %></td>
+                <td>
+                  <div class="action-buttons">
+                    <a href="/digital-assets/<%= asset.UniqueId %>/edit" class="btn btn-secondary btn-small">Edit</a>
+                    <form action="/digital-assets/<%= asset.UniqueId %>?_method=DELETE" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure?');">
+                      <button type="submit" class="btn btn-danger btn-small">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

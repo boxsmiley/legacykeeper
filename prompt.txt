@@ -1,0 +1,2 @@
+create a nodejs website using the json files in this directory.  users
+  should come from the user.json.  the default theme should be dark.  each users should have a landing page that they go to after login.  there should be a user administrator page to manage and display the users.  each user can have multiple documents, contacts, contact_groups, digital_assets, finanial_assets.  they should be able to edit their connections to these items from their dashboard.

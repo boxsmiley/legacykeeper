@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Subscription - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="page-header">
+      <h1 class="page-title">My Subscription</h1>
+    </div>
+
+    <% if (subscriptions.length === 0) { %>
+      <div class="card">
+        <h2 class="card-title">No Active Subscription</h2>
+        <p>You don't have an active subscription. Browse available plans below:</p>
+      </div>
+    <% } else { %>
+      <% subscriptions.forEach(sub => { %>
+        <div class="card">
+          <h2 class="card-title">Current Plan: <%= sub.Plan %></h2>
+          <div class="card-content">
+            <p><strong>Status:</strong> <span style="color: <%= sub.Status === 'active' ? 'var(--success)' : 'var(--error)' %>"><%= sub.Status %></span></p>
+            <p><strong>Billing Cycle:</strong> <%= sub.BillingCycle %></p>
+            <p><strong>Start Date:</strong> <%= new Date(sub.StartDate).toLocaleDateString() %></p>
+            <% if (sub.EndDate) { %>
+              <p><strong>End Date:</strong> <%= new Date(sub.EndDate).toLocaleDateString() %></p>
+            <% } %>
+            <p><strong>Next Billing:</strong> <%= sub.NextBillingDate ? new Date(sub.NextBillingDate).toLocaleDateString() : 'N/A' %></p>
+          </div>
+        </div>
+      <% }); %>
+    <% } %>
+
+    <h2 style="margin-top: 2rem; color: var(--accent-primary);">Available Plans</h2>
+    <div class="stats-grid">
+      <% plans.forEach(plan => { %>
+        <div class="card">
+          <h3 class="card-title"><%= plan.SubscriptionLevel %></h3>
+          <div class="card-content">
+            <p><strong>Monthly:</strong> $<%= plan.PriceMonthly %></p>
+            <p><strong>Annual:</strong> $<%= plan.PriceAnnual %></p>
+            <p><strong>Storage:</strong> <%= plan.StorageLimitGB %> GB</p>
+            <p><strong>Work Units:</strong> <%= plan.WorkUnitLimit %></p>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+</body>
+</html>

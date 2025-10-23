@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documents - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="page-header">
+      <h1 class="page-title">My Documents</h1>
+      <a href="/documents/new" class="btn btn-primary">Add New Document</a>
+    </div>
+
+    <div class="table">
+      <table>
+        <thead>
+          <tr>
+            <th>File Name</th>
+            <th>Type</th>
+            <th>Version</th>
+            <th>Size</th>
+            <th>Physical Location</th>
+            <th>Permissions</th>
+            <th>Uploaded</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (documents.length === 0) { %>
+            <tr>
+              <td colspan="8" style="text-align: center;">No documents found. Upload your first document!</td>
+            </tr>
+          <% } else { %>
+            <% documents.forEach(doc => { %>
+              <tr>
+                <td>
+                  <% if (doc.BubbleFile) { %>
+                    <a href="/documents/<%= doc.UniqueId %>/download" style="color: var(--accent-primary); text-decoration: none;" title="<%= doc.Description || 'No description' %>">
+                      <%= doc.FileName || 'Untitled Document' %>
+                    </a>
+                  <% } else { %>
+                    <span title="<%= doc.Description || 'No description' %>"><%= doc.FileName || 'Untitled Document' %></span>
+                  <% } %>
+                </td>
+                <td><%= doc.DocumentType || 'N/A' %></td>
+                <td><%= doc.Version || '1.0' %></td>
+                <td><%= doc.FileSize || 'N/A' %></td>
+                <td><%= doc.PhysicalLocation || 'N/A' %></td>
+                <td>
+                  <%
+                    const userCount = (doc.PermittedUsers && doc.PermittedUsers.length) || 0;
+                    const groupCount = (doc.PermittedContactGroups && doc.PermittedContactGroups.length) || 0;
+                    const totalPermissions = userCount + groupCount;
+                  %>
+                  <% if (totalPermissions > 0) { %>
+                    <span style="padding: 0.25rem 0.5rem; background: var(--accent-primary); color: white; border-radius: 3px; font-size: 0.85rem;">
+                      <%= userCount %> user<%= userCount !== 1 ? 's' : '' %>, <%= groupCount %> group<%= groupCount !== 1 ? 's' : '' %>
+                    </span>
+                  <% } else { %>
+                    <span style="color: var(--text-secondary);">None</span>
+                  <% } %>
+                </td>
+                <td><%= doc.DateUploaded ? new Date(doc.DateUploaded).toLocaleDateString() : 'N/A' %></td>
+                <td>
+                  <div class="action-buttons">
+                    <% if (doc.BubbleFile) { %>
+                      <a href="/documents/<%= doc.UniqueId %>/download" class="btn btn-primary btn-small">Download</a>
+                    <% } %>
+                    <a href="/documents/<%= doc.UniqueId %>/edit" class="btn btn-secondary btn-small">Edit</a>
+                    <form action="/documents/<%= doc.UniqueId %>?_method=DELETE" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure? This will delete the document and its file.');">
+                      <button type="submit" class="btn btn-danger btn-small">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
