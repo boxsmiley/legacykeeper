@@ -6,18 +6,18 @@ const { ensureAuthenticated } = require('../middleware/auth');
 router.use(ensureAuthenticated);
 
 // List legacy entries
-router.get('/', (req, res) => {
-  const legacyEntries = db.findByField('legacy_entries.json', 'OwnerUser', req.session.user.UniqueId);
+router.get('/', async (req, res) => {
+  const legacyEntries = await db.findByField('legacy_entries.json', 'OwnerUser', req.session.user.UniqueId);
   res.render('legacyEntries/index', { legacyEntries });
 });
 
 // New legacy entry form
-router.get('/new', (req, res) => {
+router.get('/new', async (req, res) => {
   res.render('legacyEntries/form', { legacyEntry: null, action: 'create' });
 });
 
 // Create legacy entry
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { EntryTitle, LegacyEntryType, ContentText, MediaFile } = req.body;
 
   db.create('legacy_entries.json', {
@@ -35,8 +35,8 @@ router.post('/', (req, res) => {
 });
 
 // Edit legacy entry form
-router.get('/:id/edit', (req, res) => {
-  const legacyEntry = db.findById('legacy_entries.json', req.params.id);
+router.get('/:id/edit', async (req, res) => {
+  const legacyEntry = await db.findById('legacy_entries.json', req.params.id);
   if (!legacyEntry || legacyEntry.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Legacy entry not found');
     return res.redirect('/legacy-entries');
@@ -45,10 +45,10 @@ router.get('/:id/edit', (req, res) => {
 });
 
 // Update legacy entry
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const { EntryTitle, LegacyEntryType, ContentText, MediaFile } = req.body;
 
-  const legacyEntry = db.findById('legacy_entries.json', req.params.id);
+  const legacyEntry = await db.findById('legacy_entries.json', req.params.id);
   if (!legacyEntry || legacyEntry.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Legacy entry not found');
     return res.redirect('/legacy-entries');
@@ -66,8 +66,8 @@ router.put('/:id', (req, res) => {
 });
 
 // Delete legacy entry
-router.delete('/:id', (req, res) => {
-  const legacyEntry = db.findById('legacy_entries.json', req.params.id);
+router.delete('/:id', async (req, res) => {
+  const legacyEntry = await db.findById('legacy_entries.json', req.params.id);
   if (!legacyEntry || legacyEntry.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Legacy entry not found');
     return res.redirect('/legacy-entries');

@@ -1,87 +1,112 @@
-const fs = require('fs');
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
+/**
+ * Database Module - Unified interface for JSON and Redis storage
+ *
+ * This module provides a unified API that works with both:
+ * - JSON file storage (original system)
+ * - Redis storage (new system)
+ *
+ * Set USE_REDIS=true in .env to use Redis
+ */
 
-class Database {
-  constructor() {
-    this.dataDir = path.join(__dirname, '../data');
-    this.ensureDataDir();
-  }
+require('dotenv').config();
 
-  ensureDataDir() {
-    if (!fs.existsSync(this.dataDir)) {
-      fs.mkdirSync(this.dataDir, { recursive: true });
-    }
-  }
+// Check which database to use
+const useRedis = process.env.USE_REDIS === 'true';
 
-  readData(filename) {
-    const filepath = path.join(this.dataDir, filename);
-    if (!fs.existsSync(filepath)) {
-      return [];
-    }
-    const data = fs.readFileSync(filepath, 'utf8');
-    return JSON.parse(data);
-  }
+if (useRedis) {
+  console.log('🔴 Using Redis for data storage');
+  const redisDb = require('./redis-database');
 
-  writeData(filename, data) {
-    const filepath = path.join(this.dataDir, filename);
-    fs.writeFileSync(filepath, JSON.stringify(data, null, 2));
-  }
+  // Export Redis database with wrapped async methods
+  module.exports = {
+    // Async methods that return promises
+    async create(collection, item) {
+      return await redisDb.create(collection, item);
+    },
 
-  create(collection, item) {
-    const data = this.readData(collection);
-    const newItem = {
-      ...item,
-      UniqueId: uuidv4(),
-      CreatedDate: new Date().toISOString(),
-      ModifiedDate: new Date().toISOString(),
-      Slug: this.generateSlug(item)
-    };
-    data.push(newItem);
-    this.writeData(collection, data);
-    return newItem;
-  }
+    async findAll(collection) {
+      return await redisDb.findAll(collection);
+    },
 
-  findAll(collection) {
-    return this.readData(collection);
-  }
+    async findById(collection, id) {
+      return await redisDb.findById(collection, id);
+    },
 
-  findById(collection, id) {
-    const data = this.readData(collection);
-    return data.find(item => item.UniqueId === id);
-  }
+    async findByField(collection, field, value) {
+      return await redisDb.findByField(collection, field, value);
+    },
 
-  findByField(collection, field, value) {
-    const data = this.readData(collection);
-    return data.filter(item => item[field] === value);
-  }
+    async update(collection, id, updates) {
+      return await redisDb.update(collection, id, updates);
+    },
 
-  update(collection, id, updates) {
-    const data = this.readData(collection);
-    const index = data.findIndex(item => item.UniqueId === id);
-    if (index === -1) return null;
+    async delete(collection, id) {
+      return await redisDb.delete(collection, id);
+    },
 
-    data[index] = {
-      ...data[index],
-      ...updates,
-      ModifiedDate: new Date().toISOString()
-    };
-    this.writeData(collection, data);
-    return data[index];
-  }
+    // Utility methods
+    generateSlug(item) {
+      return redisDb.generateSlug(item);
+    },
 
-  delete(collection, id) {
-    const data = this.readData(collection);
-    const filtered = data.filter(item => item.UniqueId !== id);
-    this.writeData(collection, filtered);
-    return filtered.length < data.length;
-  }
+    async getStats() {
+      return await redisDb.getStats();
+    },
 
-  generateSlug(item) {
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substring(2, 8);
-    return `${timestamp}-${random}`;
-  }
+    async close() {
+      return await redisDb.close();
+    },
+
+    // Expose Redis instance for advanced use
+    redis: redisDb.redis,
+
+    // Type identifier
+    type: 'redis'
+  };
+} else {
+  console.log('📄 Using JSON files for data storage');
+  const jsonDb = require('./database-backup');
+
+  // Wrap synchronous JSON methods to return promises for consistency
+  module.exports = {
+    async create(collection, item) {
+      return jsonDb.create(collection, item);
+    },
+
+    async findAll(collection) {
+      return jsonDb.findAll(collection);
+    },
+
+    async findById(collection, id) {
+      return jsonDb.findById(collection, id);
+    },
+
+    async findByField(collection, field, value) {
+      return jsonDb.findByField(collection, field, value);
+    },
+
+    async update(collection, id, updates) {
+      return jsonDb.update(collection, id, updates);
+    },
+
+    async delete(collection, id) {
+      return jsonDb.delete(collection, id);
+    },
+
+    generateSlug(item) {
+      return jsonDb.generateSlug(item);
+    },
+
+    async close() {
+      // No-op for JSON
+      return Promise.resolve();
+    },
+
+    // Type identifier
+    type: 'json'
+  };
 }
 
-module.exports = new Database();
+// Export type for checking
+module.exports.isRedis = useRedis;
+module.exports.isJson = !useRedis;

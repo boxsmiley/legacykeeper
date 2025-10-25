@@ -7,18 +7,18 @@ router.use(ensureAuthenticated);
 router.use(ensureAdmin);
 
 // List all subscription plans
-router.get('/', (req, res) => {
-  const plans = db.findAll('subscription_plans.json');
+router.get('/', async (req, res) => {
+  const plans = await db.findAll('subscription_plans.json');
   res.render('subscriptionPlans/index', { plans });
 });
 
 // New plan form
-router.get('/new', (req, res) => {
+router.get('/new', async (req, res) => {
   res.render('subscriptionPlans/form', { plan: null, action: 'create' });
 });
 
 // Create plan
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { SubscriptionLevel, PriceMonthly, PriceAnnual, StorageLimitGB, WorkUnitLimit, FeatureList } = req.body;
 
   db.create('subscription_plans.json', {
@@ -36,8 +36,8 @@ router.post('/', (req, res) => {
 });
 
 // Edit plan form
-router.get('/:id/edit', (req, res) => {
-  const plan = db.findById('subscription_plans.json', req.params.id);
+router.get('/:id/edit', async (req, res) => {
+  const plan = await db.findById('subscription_plans.json', req.params.id);
   if (!plan) {
     req.flash('error_msg', 'Plan not found');
     return res.redirect('/subscription-plans');
@@ -46,7 +46,7 @@ router.get('/:id/edit', (req, res) => {
 });
 
 // Update plan
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const { SubscriptionLevel, PriceMonthly, PriceAnnual, StorageLimitGB, WorkUnitLimit, FeatureList } = req.body;
 
   db.update('subscription_plans.json', req.params.id, {
@@ -63,7 +63,7 @@ router.put('/:id', (req, res) => {
 });
 
 // Delete plan
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   db.delete('subscription_plans.json', req.params.id);
   req.flash('success_msg', 'Subscription plan deleted successfully');
   res.redirect('/subscription-plans');

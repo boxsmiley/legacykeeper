@@ -5,7 +5,13 @@
       "Bash(node:*)",
       "Bash(npm install:*)",
       "Bash(cat:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(chmod:*)",
+      "Bash(redis-server:*)",
+      "Bash(redis-cli:*)",
+      "Bash(/home/william/legacykeeper/scripts/fix-async-routes.sh:*)",
+      "Bash(/home/william/legacykeeper/scripts/fix-async-signatures.sh:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

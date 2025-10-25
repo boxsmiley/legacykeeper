@@ -6,19 +6,19 @@ const { ensureAuthenticated } = require('../middleware/auth');
 router.use(ensureAuthenticated);
 
 // List contact groups
-router.get('/', (req, res) => {
-  const contactGroups = db.findByField('contact_groups.json', 'OwnerUser', req.session.user.UniqueId);
+router.get('/', async (req, res) => {
+  const contactGroups = await db.findByField('contact_groups.json', 'OwnerUser', req.session.user.UniqueId);
   res.render('contactGroups/index', { contactGroups });
 });
 
 // New contact group form
-router.get('/new', (req, res) => {
-  const contacts = db.findByField('contacts.json', 'OwnerUser', req.session.user.UniqueId);
+router.get('/new', async (req, res) => {
+  const contacts = await db.findByField('contacts.json', 'OwnerUser', req.session.user.UniqueId);
   res.render('contactGroups/form', { contactGroup: null, action: 'create', contacts });
 });
 
 // Create contact group
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { GroupName, Description, Members } = req.body;
 
   db.create('contact_groups.json', {
@@ -34,21 +34,21 @@ router.post('/', (req, res) => {
 });
 
 // Edit contact group form
-router.get('/:id/edit', (req, res) => {
-  const contactGroup = db.findById('contact_groups.json', req.params.id);
+router.get('/:id/edit', async (req, res) => {
+  const contactGroup = await db.findById('contact_groups.json', req.params.id);
   if (!contactGroup || contactGroup.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Contact group not found');
     return res.redirect('/contact-groups');
   }
-  const contacts = db.findByField('contacts.json', 'OwnerUser', req.session.user.UniqueId);
+  const contacts = await db.findByField('contacts.json', 'OwnerUser', req.session.user.UniqueId);
   res.render('contactGroups/form', { contactGroup, action: 'edit', contacts });
 });
 
 // Update contact group
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const { GroupName, Description, Members } = req.body;
 
-  const contactGroup = db.findById('contact_groups.json', req.params.id);
+  const contactGroup = await db.findById('contact_groups.json', req.params.id);
   if (!contactGroup || contactGroup.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Contact group not found');
     return res.redirect('/contact-groups');
@@ -65,8 +65,8 @@ router.put('/:id', (req, res) => {
 });
 
 // Delete contact group
-router.delete('/:id', (req, res) => {
-  const contactGroup = db.findById('contact_groups.json', req.params.id);
+router.delete('/:id', async (req, res) => {
+  const contactGroup = await db.findById('contact_groups.json', req.params.id);
   if (!contactGroup || contactGroup.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Contact group not found');
     return res.redirect('/contact-groups');

@@ -26,9 +26,11 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
   fileFilter: (req, file, cb) => {
     // Allow common document types
-    const allowedTypes = /pdf|doc|docx|txt|xls|xlsx|ppt|pptx|jpg|jpeg|png|gif|zip|rar/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
+    const allowedExtensions = /pdf|doc|docx|txt|xls|xlsx|ppt|pptx|jpg|jpeg|png|gif|zip|rar/;
+    const allowedMimetypes = /pdf|msword|officedocument|text\/plain|sheet|presentation|image|zip|rar|x-rar/;
+
+    const extname = allowedExtensions.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedMimetypes.test(file.mimetype);
 
     if (extname && mimetype) {
       return cb(null, true);
@@ -41,16 +43,16 @@ const upload = multer({
 router.use(ensureAuthenticated);
 
 // List documents
-router.get('/', (req, res) => {
-  const documents = db.findByField('documents.json', 'OwnerUser', req.session.user.UniqueId);
+router.get('/', async (req, res) => {
+  const documents = await db.findByField('documents.json', 'OwnerUser', req.session.user.UniqueId);
   res.render('documents/index', { documents });
 });
 
 // New document form
-router.get('/new', (req, res) => {
+router.get('/new', async (req, res) => {
   // Get all users and contact groups for permissions
-  const allUsers = db.findAll('users.json');
-  const contactGroups = db.findByField('contact_groups.json', 'OwnerUser', req.session.user.UniqueId);
+  const allUsers = await db.findAll('users.json');
+  const contactGroups = await db.findByField('contact_groups.json', 'OwnerUser', req.session.user.UniqueId);
 
   res.render('documents/form', {
     document: null,
@@ -61,7 +63,7 @@ router.get('/new', (req, res) => {
 });
 
 // Create document
-router.post('/', upload.single('documentFile'), (req, res) => {
+router.post('/', upload.single('documentFile'), async (req, res) => {
   const { FileName, DocumentType, Description, Version, PhysicalLocation, PermittedUsers, PermittedContactGroups } = req.body;
 
   // Validate required fields
@@ -119,16 +121,16 @@ router.post('/', upload.single('documentFile'), (req, res) => {
 });
 
 // Edit document form
-router.get('/:id/edit', (req, res) => {
-  const document = db.findById('documents.json', req.params.id);
+router.get('/:id/edit', async (req, res) => {
+  const document = await db.findById('documents.json', req.params.id);
   if (!document || document.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Document not found');
     return res.redirect('/documents');
   }
 
   // Get all users and contact groups for permissions
-  const allUsers = db.findAll('users.json');
-  const contactGroups = db.findByField('contact_groups.json', 'OwnerUser', req.session.user.UniqueId);
+  const allUsers = await db.findAll('users.json');
+  const contactGroups = await db.findByField('contact_groups.json', 'OwnerUser', req.session.user.UniqueId);
 
   res.render('documents/form', {
     document,
@@ -139,7 +141,11 @@ router.get('/:id/edit', (req, res) => {
 });
 
 // Update document
-router.put('/:id', (req, res) => {
+router.put('/:id', upload.single('documentFile'), async (req, res) => {
+  console.log('=== UPDATE DOCUMENT ROUTE HIT ===');
+  console.log('Document ID:', req.params.id);
+  console.log('Request Body:', req.body);
+
   const {
     FileName,
     DocumentType,
@@ -150,7 +156,9 @@ router.put('/:id', (req, res) => {
     PermittedContactGroups
   } = req.body;
 
-  const document = db.findById('documents.json', req.params.id);
+  const document = await db.findById('documents.json', req.params.id);
+  console.log('Found Document:', document);
+
   if (!document || document.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Document not found');
     return res.redirect('/documents');
@@ -175,23 +183,29 @@ router.put('/:id', (req, res) => {
     }
   }
 
-  db.update('documents.json', req.params.id, {
-    FileName,
-    DocumentType,
-    Description,
-    Version,
-    PhysicalLocation,
+  // Build update object - only update editable fields, preserve file-related fields
+  const updates = {
+    FileName: FileName || document.FileName || 'Untitled Document',
+    DocumentType: DocumentType || document.DocumentType || 'Other',
+    Description: Description !== undefined ? Description : (document.Description || ''),
+    Version: Version || document.Version || '1.0',
+    PhysicalLocation: PhysicalLocation !== undefined ? PhysicalLocation : (document.PhysicalLocation || ''),
     PermittedUsers: permittedUsersArray,
     PermittedContactGroups: permittedGroupsArray
-  });
+  };
+
+  console.log('Updates Object:', updates);
+
+  const updatedDoc = await db.update('documents.json', req.params.id, updates);
+  console.log('Updated Document:', updatedDoc);
 
   req.flash('success_msg', 'Document updated successfully');
   res.redirect('/documents');
 });
 
 // Download document
-router.get('/:id/download', (req, res) => {
-  const document = db.findById('documents.json', req.params.id);
+router.get('/:id/download', async (req, res) => {
+  const document = await db.findById('documents.json', req.params.id);
   if (!document || document.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Document not found');
     return res.redirect('/documents');
@@ -213,8 +227,8 @@ router.get('/:id/download', (req, res) => {
 });
 
 // Delete document
-router.delete('/:id', (req, res) => {
-  const document = db.findById('documents.json', req.params.id);
+router.delete('/:id', async (req, res) => {
+  const document = await db.findById('documents.json', req.params.id);
   if (!document || document.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Document not found');
     return res.redirect('/documents');

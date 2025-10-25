@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const bodyParser = require('body-parser');
@@ -10,6 +11,9 @@ const PORT = process.env.PORT || 3000;
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const profileRoutes = require('./routes/profile');
+const messagesRoutes = require('./routes/messages');
+const chatRoutes = require('./routes/chat');
 const dashboardRoutes = require('./routes/dashboard');
 const adminRoutes = require('./routes/admin');
 const documentRoutes = require('./routes/documents');
@@ -31,13 +35,16 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Session configuration
 app.use(session({
-  secret: 'legacy-keeper-secret-key-change-in-production',
+  secret: process.env.SESSION_SECRET || 'legacy-keeper-secret-key-change-in-production',
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 hours
 }));
 
 app.use(flash());
+
+// Configure Passport (must be after session)
+require('./config/passport')(app);
 
 // Global variables middleware
 app.use((req, res, next) => {
@@ -54,6 +61,10 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Routes
 app.use('/', authRoutes);
+app.use('/auth', authRoutes);
+app.use('/profile', profileRoutes);
+app.use('/messages', messagesRoutes);
+app.use('/chat', chatRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/admin', adminRoutes);
 app.use('/documents', documentRoutes);

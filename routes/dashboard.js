@@ -7,19 +7,19 @@ const { ensureAuthenticated } = require('../middleware/auth');
 router.use(ensureAuthenticated);
 
 // Dashboard home
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   const userId = req.session.user.UniqueId;
 
   // Get full user details
-  const userDetails = db.findById('users.json', userId);
+  const userDetails = await db.findById('users.json', userId);
 
   // Get user's items
-  const documents = db.findByField('documents.json', 'OwnerUser', userId);
-  const contacts = db.findByField('contacts.json', 'OwnerUser', userId);
-  const contactGroups = db.findByField('contact_groups.json', 'OwnerUser', userId);
-  const digitalAssets = db.findByField('digital_assets.json', 'OwnerUser', userId);
-  const financialAssets = db.findByField('financial_assets.json', 'OwnerUser', userId);
-  const legacyEntries = db.findByField('legacy_entries.json', 'OwnerUser', userId);
+  const documents = await db.findByField('documents.json', 'OwnerUser', userId);
+  const contacts = await db.findByField('contacts.json', 'OwnerUser', userId);
+  const contactGroups = await db.findByField('contact_groups.json', 'OwnerUser', userId);
+  const digitalAssets = await db.findByField('digital_assets.json', 'OwnerUser', userId);
+  const financialAssets = await db.findByField('financial_assets.json', 'OwnerUser', userId);
+  const legacyEntries = await db.findByField('legacy_entries.json', 'OwnerUser', userId);
 
   res.render('dashboard/index', {
     user: req.session.user,

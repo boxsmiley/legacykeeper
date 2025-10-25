@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const db = require('../models/database');
 
 // Login page
-router.get('/login', (req, res) => {
+router.get('/login', async (req, res) => {
   if (req.session.user) {
     return res.redirect('/dashboard');
   }
@@ -16,7 +16,7 @@ router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const users = db.findAll('users.json');
+    const users = await db.findAll('users.json');
     const user = users.find(u => u.Email === email);
 
     if (!user) {
@@ -50,7 +50,7 @@ router.post('/login', async (req, res) => {
 });
 
 // Register page
-router.get('/register', (req, res) => {
+router.get('/register', async (req, res) => {
   if (req.session.user) {
     return res.redirect('/dashboard');
   }
@@ -67,7 +67,7 @@ router.post('/register', async (req, res) => {
   }
 
   try {
-    const users = db.findAll('users.json');
+    const users = await db.findAll('users.json');
     const existingUser = users.find(u => u.Email === email);
 
     if (existingUser) {
@@ -77,7 +77,7 @@ router.post('/register', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = db.create('users.json', {
+    const newUser = await db.create('users.json', {
       FirstName: firstName,
       MiddleName: '',
       LastName: lastName,
@@ -113,7 +113,7 @@ router.post('/register', async (req, res) => {
 });
 
 // Logout
-router.get('/logout', (req, res) => {
+router.get('/logout', async (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       console.error(err);
@@ -121,5 +121,28 @@ router.get('/logout', (req, res) => {
     res.redirect('/login');
   });
 });
+
+// Facebook OAuth routes
+const passport = require('passport');
+
+// Initiate Facebook OAuth
+router.get('/facebook',
+  passport.authenticate('facebook', {
+    scope: ['email', 'user_birthday', 'user_hometown', 'user_location']
+  })
+);
+
+// Facebook OAuth callback
+router.get('/facebook/callback',
+  passport.authenticate('facebook', {
+    failureRedirect: '/profile',
+    failureFlash: true
+  }),
+  (req, res) => {
+    // Successful authentication
+    req.flash('success_msg', 'Facebook account connected successfully! Your profile has been updated with Facebook data.');
+    res.redirect(req.session.returnTo || '/profile');
+  }
+);
 
 module.exports = router;

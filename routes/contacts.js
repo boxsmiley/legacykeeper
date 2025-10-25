@@ -6,18 +6,18 @@ const { ensureAuthenticated } = require('../middleware/auth');
 router.use(ensureAuthenticated);
 
 // List contacts
-router.get('/', (req, res) => {
-  const contacts = db.findByField('contacts.json', 'OwnerUser', req.session.user.UniqueId);
+router.get('/', async (req, res) => {
+  const contacts = await db.findByField('contacts.json', 'OwnerUser', req.session.user.UniqueId);
   res.render('contacts/index', { contacts });
 });
 
 // New contact form
-router.get('/new', (req, res) => {
+router.get('/new', async (req, res) => {
   res.render('contacts/form', { contact: null, action: 'create' });
 });
 
 // Create contact
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { FirstName, LastName, Email, PhoneNumber, Address, Relationship, Notes } = req.body;
 
   db.create('contacts.json', {
@@ -39,8 +39,8 @@ router.post('/', (req, res) => {
 });
 
 // Edit contact form
-router.get('/:id/edit', (req, res) => {
-  const contact = db.findById('contacts.json', req.params.id);
+router.get('/:id/edit', async (req, res) => {
+  const contact = await db.findById('contacts.json', req.params.id);
   if (!contact || contact.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Contact not found');
     return res.redirect('/contacts');
@@ -49,10 +49,10 @@ router.get('/:id/edit', (req, res) => {
 });
 
 // Update contact
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const { FirstName, LastName, Email, PhoneNumber, Address, Relationship, Notes } = req.body;
 
-  const contact = db.findById('contacts.json', req.params.id);
+  const contact = await db.findById('contacts.json', req.params.id);
   if (!contact || contact.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Contact not found');
     return res.redirect('/contacts');
@@ -73,8 +73,8 @@ router.put('/:id', (req, res) => {
 });
 
 // Delete contact
-router.delete('/:id', (req, res) => {
-  const contact = db.findById('contacts.json', req.params.id);
+router.delete('/:id', async (req, res) => {
+  const contact = await db.findById('contacts.json', req.params.id);
   if (!contact || contact.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Contact not found');
     return res.redirect('/contacts');

@@ -45,13 +45,13 @@ router.use(ensureAuthenticated);
 router.use(ensureAdmin);
 
 // Admin dashboard - list all users
-router.get('/users', (req, res) => {
-  const users = db.findAll('users.json');
+router.get('/users', async (req, res) => {
+  const users = await db.findAll('users.json');
   res.render('admin/users', { users });
 });
 
 // Create user page
-router.get('/users/new', (req, res) => {
+router.get('/users/new', async (req, res) => {
   res.render('admin/user-form', { user: null, action: 'create' });
 });
 
@@ -73,7 +73,7 @@ router.post('/users', upload.single('profilePictureFile'), async (req, res) => {
   } = req.body;
 
   try {
-    const users = db.findAll('users.json');
+    const users = await db.findAll('users.json');
     const existingUser = users.find(u => u.Email === Email);
 
     if (existingUser) {
@@ -125,8 +125,8 @@ router.post('/users', upload.single('profilePictureFile'), async (req, res) => {
 });
 
 // Edit user page
-router.get('/users/:id/edit', (req, res) => {
-  const user = db.findById('users.json', req.params.id);
+router.get('/users/:id/edit', async (req, res) => {
+  const user = await db.findById('users.json', req.params.id);
   if (!user) {
     req.flash('error_msg', 'User not found');
     return res.redirect('/admin/users');
@@ -152,7 +152,7 @@ router.put('/users/:id', upload.single('profilePictureFile'), async (req, res) =
   } = req.body;
 
   try {
-    const user = db.findById('users.json', req.params.id);
+    const user = await db.findById('users.json', req.params.id);
 
     const updates = {
       FirstName,
@@ -199,7 +199,7 @@ router.put('/users/:id', upload.single('profilePictureFile'), async (req, res) =
 });
 
 // Delete user
-router.delete('/users/:id', (req, res) => {
+router.delete('/users/:id', async (req, res) => {
   try {
     db.delete('users.json', req.params.id);
     req.flash('success_msg', 'User deleted successfully');

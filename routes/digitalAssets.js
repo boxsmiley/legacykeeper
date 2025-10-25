@@ -6,18 +6,18 @@ const { ensureAuthenticated } = require('../middleware/auth');
 router.use(ensureAuthenticated);
 
 // List digital assets
-router.get('/', (req, res) => {
-  const digitalAssets = db.findByField('digital_assets.json', 'OwnerUser', req.session.user.UniqueId);
+router.get('/', async (req, res) => {
+  const digitalAssets = await db.findByField('digital_assets.json', 'OwnerUser', req.session.user.UniqueId);
   res.render('digitalAssets/index', { digitalAssets });
 });
 
 // New digital asset form
-router.get('/new', (req, res) => {
+router.get('/new', async (req, res) => {
   res.render('digitalAssets/form', { digitalAsset: null, action: 'create' });
 });
 
 // Create digital asset
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { AssetName, AssetType, LoginURL, UsernameIdentifier, PasswordKey, Notes } = req.body;
 
   db.create('digital_assets.json', {
@@ -37,8 +37,8 @@ router.post('/', (req, res) => {
 });
 
 // Edit digital asset form
-router.get('/:id/edit', (req, res) => {
-  const digitalAsset = db.findById('digital_assets.json', req.params.id);
+router.get('/:id/edit', async (req, res) => {
+  const digitalAsset = await db.findById('digital_assets.json', req.params.id);
   if (!digitalAsset || digitalAsset.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Digital asset not found');
     return res.redirect('/digital-assets');
@@ -47,10 +47,10 @@ router.get('/:id/edit', (req, res) => {
 });
 
 // Update digital asset
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const { AssetName, AssetType, LoginURL, UsernameIdentifier, PasswordKey, Notes } = req.body;
 
-  const digitalAsset = db.findById('digital_assets.json', req.params.id);
+  const digitalAsset = await db.findById('digital_assets.json', req.params.id);
   if (!digitalAsset || digitalAsset.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Digital asset not found');
     return res.redirect('/digital-assets');
@@ -70,8 +70,8 @@ router.put('/:id', (req, res) => {
 });
 
 // Delete digital asset
-router.delete('/:id', (req, res) => {
-  const digitalAsset = db.findById('digital_assets.json', req.params.id);
+router.delete('/:id', async (req, res) => {
+  const digitalAsset = await db.findById('digital_assets.json', req.params.id);
   if (!digitalAsset || digitalAsset.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Digital asset not found');
     return res.redirect('/digital-assets');

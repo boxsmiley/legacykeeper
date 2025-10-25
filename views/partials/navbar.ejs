@@ -3,6 +3,8 @@
     <a href="/dashboard" class="navbar-brand">LegacyKeeper</a>
     <ul class="navbar-nav">
       <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
+      <li><a href="/messages" class="nav-link">Messages</a></li>
+      <li><a href="/chat" class="nav-link">Chat</a></li>
       <li><a href="/documents" class="nav-link">Documents</a></li>
       <li><a href="/contacts" class="nav-link">Contacts</a></li>
       <li><a href="/contact-groups" class="nav-link">Groups</a></li>
@@ -17,14 +19,16 @@
       <% } %>
       <% if (typeof user !== 'undefined' && user) { %>
         <li class="nav-user-section">
-          <% if (user.ProfilePicture) { %>
-            <img src="<%= user.ProfilePicture %>" alt="Avatar" class="nav-avatar">
-          <% } else { %>
-            <div class="nav-avatar-placeholder">
-              <%= user.FirstName.charAt(0) %><%= user.LastName ? user.LastName.charAt(0) : '' %>
-            </div>
-          <% } %>
-          <span class="nav-link"><%= user.FirstName %></span>
+          <a href="/profile" style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+            <% if (user.ProfilePicture) { %>
+              <img src="<%= user.ProfilePicture %>" alt="Avatar" class="nav-avatar">
+            <% } else { %>
+              <div class="nav-avatar-placeholder">
+                <%= user.FirstName.charAt(0) %><%= user.LastName ? user.LastName.charAt(0) : '' %>
+              </div>
+            <% } %>
+            <span class="nav-link"><%= user.FirstName %></span>
+          </a>
         </li>
         <li><a href="/logout" class="nav-link">Logout</a></li>
       <% } %>

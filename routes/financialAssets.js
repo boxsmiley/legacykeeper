@@ -6,18 +6,18 @@ const { ensureAuthenticated } = require('../middleware/auth');
 router.use(ensureAuthenticated);
 
 // List financial assets
-router.get('/', (req, res) => {
-  const financialAssets = db.findByField('financial_assets.json', 'OwnerUser', req.session.user.UniqueId);
+router.get('/', async (req, res) => {
+  const financialAssets = await db.findByField('financial_assets.json', 'OwnerUser', req.session.user.UniqueId);
   res.render('financialAssets/index', { financialAssets });
 });
 
 // New financial asset form
-router.get('/new', (req, res) => {
+router.get('/new', async (req, res) => {
   res.render('financialAssets/form', { financialAsset: null, action: 'create' });
 });
 
 // Create financial asset
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { AssetName, AssetType, LoginURL, UsernameIdentifier, PasswordKey, Notes } = req.body;
 
   db.create('financial_assets.json', {
@@ -37,8 +37,8 @@ router.post('/', (req, res) => {
 });
 
 // Edit financial asset form
-router.get('/:id/edit', (req, res) => {
-  const financialAsset = db.findById('financial_assets.json', req.params.id);
+router.get('/:id/edit', async (req, res) => {
+  const financialAsset = await db.findById('financial_assets.json', req.params.id);
   if (!financialAsset || financialAsset.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Financial asset not found');
     return res.redirect('/financial-assets');
@@ -47,10 +47,10 @@ router.get('/:id/edit', (req, res) => {
 });
 
 // Update financial asset
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const { AssetName, AssetType, LoginURL, UsernameIdentifier, PasswordKey, Notes } = req.body;
 
-  const financialAsset = db.findById('financial_assets.json', req.params.id);
+  const financialAsset = await db.findById('financial_assets.json', req.params.id);
   if (!financialAsset || financialAsset.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Financial asset not found');
     return res.redirect('/financial-assets');
@@ -70,8 +70,8 @@ router.put('/:id', (req, res) => {
 });
 
 // Delete financial asset
-router.delete('/:id', (req, res) => {
-  const financialAsset = db.findById('financial_assets.json', req.params.id);
+router.delete('/:id', async (req, res) => {
+  const financialAsset = await db.findById('financial_assets.json', req.params.id);
   if (!financialAsset || financialAsset.OwnerUser !== req.session.user.UniqueId) {
     req.flash('error_msg', 'Financial asset not found');
     return res.redirect('/financial-assets');
