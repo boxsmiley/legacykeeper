@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Start New Chat - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="form-container" style="max-width: 600px;">
+      <h2 class="card-title">Start New Chat</h2>
+
+      <form action="/chat/start" method="POST">
+        <div class="form-group">
+          <label for="userId">Select user to chat with: *</label>
+          <select id="userId" name="userId" class="form-control" required>
+            <option value="">Choose a user</option>
+            <% users.forEach(user => { %>
+              <option value="<%= user.UniqueId %>">
+                <%= user.FirstName %> <%= user.LastName %> (<%= user.Email %>)
+              </option>
+            <% }); %>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+          <button type="submit" class="btn btn-primary">Start Chat</button>
+          <a href="/chat" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

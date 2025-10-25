@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Chat - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .chat-list-container {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .chat-sidebar {
+      background: var(--bg-secondary);
+      padding: 1.5rem;
+      border-radius: 8px;
+      height: fit-content;
+    }
+    .chat-sidebar h3 {
+      margin: 0 0 1rem 0;
+      color: var(--text-primary);
+    }
+    .sidebar-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .sidebar-nav li {
+      margin-bottom: 0.5rem;
+    }
+    .sidebar-nav a {
+      display: block;
+      padding: 0.75rem 1rem;
+      color: var(--text-primary);
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background 0.2s;
+    }
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+      background: var(--accent-primary);
+      color: white;
+    }
+    .conversation-list {
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .conversation-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      transition: background 0.2s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+    .conversation-item:hover {
+      background: var(--bg-tertiary);
+    }
+    .conversation-item:last-child {
+      border-bottom: none;
+    }
+    .conversation-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .conversation-avatar-placeholder {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    .conversation-details {
+      flex: 1;
+      min-width: 0;
+    }
+    .conversation-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+    .conversation-last-message {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .conversation-meta {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .conversation-time {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+    }
+    .conversation-unread {
+      background: var(--accent-primary);
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="page-header">
+      <h1 class="page-title">Live Chat <% if (totalUnread > 0) { %><span class="conversation-unread" style="font-size: 0.8rem; margin-left: 0.5rem;"><%= totalUnread %></span><% } %></h1>
+      <a href="/chat/new" class="btn btn-primary">Start New Chat</a>
+    </div>
+
+    <div class="chat-list-container">
+      <div class="chat-sidebar">
+        <h3>Navigation</h3>
+        <ul class="sidebar-nav">
+          <li><a href="/messages">Messages</a></li>
+          <li><a href="/chat" class="active">Live Chat</a></li>
+        </ul>
+      </div>
+
+      <div class="conversation-list">
+        <% if (conversations.length === 0) { %>
+          <div class="empty-state">
+            <p>No conversations yet</p>
+            <p style="font-size: 0.9rem; margin-top: 0.5rem;">Start chatting by <a href="/chat/new" style="color: var(--accent-primary);">starting a new conversation</a></p>
+          </div>
+        <% } else { %>
+          <% conversations.forEach(conversation => {
+            const otherUserId = conversation.Participants.find(id => id !== user.UniqueId);
+            const otherUser = userMap[otherUserId];
+            const unreadCount = conversation.UnreadCount[user.UniqueId] || 0;
+          %>
+            <a href="/chat/<%= conversation.UniqueId %>" class="conversation-item">
+              <% if (otherUser && otherUser.ProfilePicture) { %>
+                <img src="<%= otherUser.ProfilePicture %>" alt="<%= otherUser.FirstName %>" class="conversation-avatar">
+              <% } else if (otherUser) { %>
+                <div class="conversation-avatar-placeholder">
+                  <%= otherUser.FirstName.charAt(0) %><%= otherUser.LastName ? otherUser.LastName.charAt(0) : '' %>
+                </div>
+              <% } %>
+              <div class="conversation-details">
+                <div class="conversation-name">
+                  <%= otherUser ? otherUser.FirstName + ' ' + otherUser.LastName : 'Unknown User' %>
+                </div>
+                <div class="conversation-last-message">
+                  <%= conversation.LastMessageText || 'No messages yet' %>
+                </div>
+              </div>
+              <div class="conversation-meta">
+                <div class="conversation-time">
+                  <%= conversation.LastMessageAt ? new Date(conversation.LastMessageAt).toLocaleDateString() : '' %>
+                </div>
+                <% if (unreadCount > 0) { %>
+                  <div class="conversation-unread"><%= unreadCount %></div>
+                <% } %>
+              </div>
+            </a>
+          <% }); %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

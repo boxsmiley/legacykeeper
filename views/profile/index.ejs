@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .profile-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      padding: 2rem;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+    }
+    .profile-picture {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid var(--accent-primary);
+    }
+    .profile-info {
+      flex: 1;
+    }
+    .profile-name {
+      font-size: 2rem;
+      margin: 0 0 0.5rem 0;
+      color: var(--text-primary);
+    }
+    .profile-email {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+    .profile-section {
+      background: var(--bg-secondary);
+      padding: 2rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+    .profile-section h2 {
+      color: var(--accent-primary);
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+    }
+    .profile-field {
+      display: flex;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .profile-field:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .profile-field-label {
+      font-weight: 600;
+      color: var(--text-secondary);
+      width: 200px;
+      flex-shrink: 0;
+    }
+    .profile-field-value {
+      color: var(--text-primary);
+      flex: 1;
+    }
+    .social-connection {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    .social-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .social-icon {
+      width: 48px;
+      height: 48px;
+      background: #1877f2;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+    .social-details {
+      flex: 1;
+    }
+    .social-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+    .social-status {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    .connected-badge {
+      padding: 0.4rem 0.8rem;
+      background: #28a745;
+      color: white;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .not-connected-badge {
+      padding: 0.4rem 0.8rem;
+      background: var(--text-secondary);
+      color: white;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="profile-container">
+      <div class="profile-header">
+        <% if (user.ProfilePicture) { %>
+          <img src="<%= user.ProfilePicture %>" alt="<%= user.FirstName %> <%= user.LastName %>" class="profile-picture">
+        <% } else { %>
+          <div class="profile-picture" style="background: var(--accent-primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; font-weight: bold;">
+            <%= user.FirstName ? user.FirstName.charAt(0).toUpperCase() : 'U' %><%= user.LastName ? user.LastName.charAt(0).toUpperCase() : '' %>
+          </div>
+        <% } %>
+        <div class="profile-info">
+          <h1 class="profile-name"><%= user.FirstName %> <%= user.MiddleName ? user.MiddleName + ' ' : '' %><%= user.LastName %></h1>
+          <p class="profile-email"><%= user.Email %></p>
+          <div style="margin-top: 1rem;">
+            <a href="/profile/edit" class="btn btn-primary">Edit Profile</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <h2>Personal Information</h2>
+        <div class="profile-field">
+          <div class="profile-field-label">Full Name:</div>
+          <div class="profile-field-value"><%= user.FirstName %> <%= user.MiddleName || '' %> <%= user.LastName %></div>
+        </div>
+        <div class="profile-field">
+          <div class="profile-field-label">Email Address:</div>
+          <div class="profile-field-value"><%= user.Email %></div>
+        </div>
+        <div class="profile-field">
+          <div class="profile-field-label">Date of Birth:</div>
+          <div class="profile-field-value"><%= user.DateOfBirth || 'Not provided' %></div>
+        </div>
+        <div class="profile-field">
+          <div class="profile-field-label">Phone Number:</div>
+          <div class="profile-field-value"><%= user.PhoneNumber || 'Not provided' %></div>
+        </div>
+        <div class="profile-field">
+          <div class="profile-field-label">Mailing Address:</div>
+          <div class="profile-field-value"><%= user.MailingAddress || 'Not provided' %></div>
+        </div>
+        <div class="profile-field">
+          <div class="profile-field-label">Account Status:</div>
+          <div class="profile-field-value">
+            <span style="padding: 0.25rem 0.75rem; background: <%= user.AccountStatus === 'active' ? '#28a745' : '#dc3545' %>; color: white; border-radius: 4px; text-transform: capitalize;">
+              <%= user.AccountStatus || 'Active' %>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <h2>Connected Accounts</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Connect your social media accounts to automatically import your profile information into LegacyKeeper.
+        </p>
+
+        <%
+          const facebookConnection = user.SocialNetworks ? user.SocialNetworks.find(sn => sn.platform === 'facebook') : null;
+        %>
+
+        <div class="social-connection">
+          <div class="social-info">
+            <div class="social-icon">f</div>
+            <div class="social-details">
+              <div class="social-name">Facebook</div>
+              <% if (facebookConnection) { %>
+                <div class="social-status">Connected as <%= facebookConnection.displayName || facebookConnection.email %></div>
+                <div class="social-status" style="font-size: 0.8rem; margin-top: 0.25rem;">
+                  Connected on <%= new Date(facebookConnection.connectedAt).toLocaleDateString() %>
+                </div>
+              <% } else { %>
+                <div class="social-status">Not connected</div>
+              <% } %>
+            </div>
+          </div>
+          <div>
+            <% if (facebookConnection) { %>
+              <span class="connected-badge">✓ Connected</span>
+              <form action="/profile/disconnect/facebook" method="POST" style="display: inline; margin-left: 1rem;" onsubmit="return confirm('Are you sure you want to disconnect your Facebook account?');">
+                <button type="submit" class="btn btn-danger btn-small">Disconnect</button>
+              </form>
+            <% } else { %>
+              <a href="/profile/connect/facebook" class="btn btn-primary">Connect Facebook</a>
+            <% } %>
+          </div>
+        </div>
+
+        <% if (facebookConnection) { %>
+          <div style="margin-top: 1.5rem; padding: 1rem; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid var(--accent-primary);">
+            <h3 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1.1rem;">Imported Facebook Data:</h3>
+            <div style="display: grid; gap: 0.5rem; color: var(--text-secondary); font-size: 0.95rem;">
+              <% if (facebookConnection.firstName) { %><div>• Name: <%= facebookConnection.firstName %> <%= facebookConnection.middleName || '' %> <%= facebookConnection.lastName %></div><% } %>
+              <% if (facebookConnection.email) { %><div>• Email: <%= facebookConnection.email %></div><% } %>
+              <% if (facebookConnection.birthday) { %><div>• Birthday: <%= facebookConnection.birthday %></div><% } %>
+              <% if (facebookConnection.hometown) { %><div>• Hometown: <%= facebookConnection.hometown %></div><% } %>
+              <% if (facebookConnection.location) { %><div>• Current Location: <%= facebookConnection.location %></div><% } %>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

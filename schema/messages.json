@@ -1,0 +1,17 @@
+{
+  "UniqueId": "",
+  "FromUserId": "",
+  "ToUserId": "",
+  "Subject": "",
+  "MessageBody": "",
+  "MessageType": "email",
+  "IsRead": false,
+  "ReadAt": "",
+  "SentAt": "",
+  "ParentMessageId": "",
+  "ThreadId": "",
+  "Attachments": [],
+  "CreatedDate": "",
+  "ModifiedDate": "",
+  "Slug": ""
+}

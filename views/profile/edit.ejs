@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Profile - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="form-container" style="max-width: 700px;">
+      <h2 class="card-title">Edit Profile</h2>
+
+      <form action="/profile/update" method="POST" enctype="multipart/form-data">
+        <h3 style="color: var(--accent-primary); margin: 2rem 0 1rem;">Basic Information</h3>
+
+        <div class="form-group">
+          <label for="FirstName">First Name *</label>
+          <input type="text" id="FirstName" name="FirstName" class="form-control" value="<%= user.FirstName %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="MiddleName">Middle Name</label>
+          <input type="text" id="MiddleName" name="MiddleName" class="form-control" value="<%= user.MiddleName || '' %>">
+        </div>
+
+        <div class="form-group">
+          <label for="LastName">Last Name *</label>
+          <input type="text" id="LastName" name="LastName" class="form-control" value="<%= user.LastName %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="Email">Email Address *</label>
+          <input type="email" id="Email" name="Email" class="form-control" value="<%= user.Email %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="DateOfBirth">Date of Birth</label>
+          <input type="date" id="DateOfBirth" name="DateOfBirth" class="form-control" value="<%= user.DateOfBirth || '' %>">
+        </div>
+
+        <div class="form-group">
+          <label for="PhoneNumber">Phone Number</label>
+          <input type="tel" id="PhoneNumber" name="PhoneNumber" class="form-control" value="<%= user.PhoneNumber || '' %>" placeholder="+1 (555) 123-4567">
+        </div>
+
+        <div class="form-group">
+          <label for="MailingAddress">Mailing Address</label>
+          <textarea id="MailingAddress" name="MailingAddress" class="form-control" rows="3"><%= user.MailingAddress || '' %></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="profilePicture">Profile Picture</label>
+          <% if (user.ProfilePicture) { %>
+            <div style="margin-bottom: 1rem;">
+              <img src="<%= user.ProfilePicture %>" alt="Current profile picture" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+            </div>
+          <% } %>
+          <input type="file" id="profilePicture" name="profilePicture" class="form-control" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
+          <small style="color: var(--text-secondary);">Accepted formats: JPEG, PNG, GIF, WebP (Max 5MB)</small>
+        </div>
+
+        <h3 style="color: var(--accent-primary); margin: 2rem 0 1rem;">Change Password</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Leave blank if you don't want to change your password.</p>
+
+        <div class="form-group">
+          <label for="currentPassword">Current Password</label>
+          <input type="password" id="currentPassword" name="currentPassword" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <input type="password" id="newPassword" name="newPassword" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm New Password</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" class="form-control">
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <a href="/profile" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

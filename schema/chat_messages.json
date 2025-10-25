@@ -1,0 +1,15 @@
+{
+  "UniqueId": "",
+  "ConversationId": "",
+  "FromUserId": "",
+  "ToUserId": "",
+  "MessageText": "",
+  "IsRead": false,
+  "ReadAt": "",
+  "SentAt": "",
+  "MessageType": "text",
+  "Attachments": [],
+  "CreatedDate": "",
+  "ModifiedDate": "",
+  "Slug": ""
+}

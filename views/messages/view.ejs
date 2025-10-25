@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= message.Subject %> - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .message-container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      padding: 2rem;
+    }
+    .message-meta {
+      display: flex;
+      justify-content: space-between;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid var(--border-color);
+      margin-bottom: 2rem;
+    }
+    .message-user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .message-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .message-avatar-placeholder {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 1.25rem;
+    }
+    .message-user-details {
+      flex: 1;
+    }
+    .message-user-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+    .message-user-email {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .message-subject {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+    .message-body {
+      color: var(--text-primary);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      background: var(--bg-tertiary);
+      padding: 1.5rem;
+      border-radius: 5px;
+      margin-bottom: 2rem;
+    }
+    .message-actions {
+      display: flex;
+      gap: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div style="margin-bottom: 1rem;">
+      <a href="/messages" class="btn btn-secondary">← Back to Messages</a>
+    </div>
+
+    <div class="message-container">
+      <h1 class="message-subject"><%= message.Subject %></h1>
+
+      <div class="message-meta">
+        <div class="message-user-info">
+          <% if (sender.ProfilePicture) { %>
+            <img src="<%= sender.ProfilePicture %>" alt="<%= sender.FirstName %>" class="message-avatar">
+          <% } else { %>
+            <div class="message-avatar-placeholder">
+              <%= sender.FirstName.charAt(0) %><%= sender.LastName ? sender.LastName.charAt(0) : '' %>
+            </div>
+          <% } %>
+          <div class="message-user-details">
+            <div class="message-user-name">From: <%= sender.FirstName %> <%= sender.LastName %></div>
+            <div class="message-user-email"><%= sender.Email %></div>
+          </div>
+        </div>
+        <div style="text-align: right; color: var(--text-secondary);">
+          <div style="margin-bottom: 0.25rem;"><%= new Date(message.SentAt).toLocaleDateString() %></div>
+          <div><%= new Date(message.SentAt).toLocaleTimeString() %></div>
+          <% if (message.IsRead && message.ReadAt) { %>
+            <div style="font-size: 0.85rem; margin-top: 0.5rem; color: #28a745;">
+              ✓ Read on <%= new Date(message.ReadAt).toLocaleDateString() %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="message-body"><%= message.MessageBody %></div>
+
+      <div class="message-actions">
+        <a href="/messages/<%= message.UniqueId %>/reply" class="btn btn-primary">Reply</a>
+        <% if (message.ToUserId === user.UniqueId) { %>
+          <form action="/messages/<%= message.UniqueId %>?_method=DELETE" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this message?');">
+            <button type="submit" class="btn btn-danger">Delete</button>
+          </form>
+        <% } %>
+        <a href="/chat?start=<%= message.FromUserId === user.UniqueId ? message.ToUserId : message.FromUserId %>" class="btn btn-secondary">Start Chat</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

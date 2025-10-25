@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof replyToMessage !== 'undefined' && replyToMessage ? 'Reply to Message' : 'Compose Message' %> - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="form-container" style="max-width: 800px;">
+      <h2 class="card-title"><%= typeof replyToMessage !== 'undefined' && replyToMessage ? 'Reply to Message' : 'Compose New Message' %></h2>
+
+      <form action="/messages/send" method="POST">
+        <div class="form-group">
+          <label for="ToUserId">To: *</label>
+          <select id="ToUserId" name="ToUserId" class="form-control" required>
+            <option value="">Select recipient</option>
+            <% users.forEach(user => { %>
+              <option value="<%= user.UniqueId %>" <%= recipientId === user.UniqueId ? 'selected' : '' %>>
+                <%= user.FirstName %> <%= user.LastName %> (<%= user.Email %>)
+              </option>
+            <% }); %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="Subject">Subject: *</label>
+          <input type="text" id="Subject" name="Subject" class="form-control"
+            value="<%= typeof replyToMessage !== 'undefined' && replyToMessage ? 'Re: ' + replyToMessage.Subject : '' %>"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="MessageBody">Message: *</label>
+          <textarea id="MessageBody" name="MessageBody" class="form-control" rows="10" required><% if (typeof replyToMessage !== 'undefined' && replyToMessage) { %>
+
+---
+Original message:
+<%= replyToMessage.MessageBody %><% } %></textarea>
+        </div>
+
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+          <input type="checkbox" id="SendEmail" name="SendEmail" style="width: auto;">
+          <label for="SendEmail" style="margin: 0;">Also send email notification to recipient</label>
+          <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem; margin-left: 1.5rem;">
+            (Requires email configuration)
+          </small>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+          <button type="submit" class="btn btn-primary">Send Message</button>
+          <a href="/messages" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
