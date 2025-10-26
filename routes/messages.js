@@ -229,4 +229,144 @@ router.delete('/:id', async (req, res) => {
   res.redirect('/messages');
 });
 
+// Bulk email to all contacts - compose form
+router.get('/bulk-email', async (req, res) => {
+  try {
+    // Get all contacts for this user
+    const allContacts = await db.findAll('contacts.json');
+    const userContacts = allContacts.filter(c => c.OwnerUser === req.session.user.UniqueId);
+
+    // Count contacts with email addresses
+    const contactsWithEmail = userContacts.filter(c => c.Email && c.Email.trim() !== '');
+
+    res.render('messages/bulk-email', {
+      contacts: userContacts,
+      contactsWithEmail: contactsWithEmail.length
+    });
+  } catch (error) {
+    console.error('Error loading bulk email form:', error);
+    req.flash('error_msg', 'Error loading bulk email form');
+    res.redirect('/messages');
+  }
+});
+
+// Send bulk email to all contacts
+router.post('/bulk-email/send', async (req, res) => {
+  const { Subject, MessageBody, SendEmail, SelectedContacts } = req.body;
+
+  if (!MessageBody || MessageBody.trim() === '') {
+    req.flash('error_msg', 'Message body is required');
+    return res.redirect('/messages/bulk-email');
+  }
+
+  try {
+    // Get all contacts for this user
+    const allContacts = await db.findAll('contacts.json');
+    const userContacts = allContacts.filter(c => c.OwnerUser === req.session.user.UniqueId);
+
+    console.log('=== BULK EMAIL DEBUG ===');
+    console.log('Total contacts in DB:', allContacts.length);
+    console.log('User contacts:', userContacts.length);
+    console.log('SelectedContacts:', SelectedContacts);
+
+    // Filter contacts based on selection
+    let recipientContacts = [];
+    if (SelectedContacts) {
+      // Send to selected contacts only
+      const selectedIds = Array.isArray(SelectedContacts) ? SelectedContacts : [SelectedContacts];
+      recipientContacts = userContacts.filter(c => selectedIds.includes(c.UniqueId) && c.Email && c.Email.trim() !== '');
+      console.log('Sending to selected contacts:', recipientContacts.length);
+    } else {
+      // Send to all contacts with email
+      recipientContacts = userContacts.filter(c => c.Email && c.Email.trim() !== '');
+      console.log('Sending to all contacts with email:', recipientContacts.length);
+    }
+
+    if (recipientContacts.length === 0) {
+      req.flash('error_msg', 'No contacts with email addresses found');
+      return res.redirect('/messages/bulk-email');
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+
+    // Send to each contact
+    for (const contact of recipientContacts) {
+      try {
+        // Check if contact has associated user account
+        let recipientUserId = contact.AssociatedUserAcco;
+
+        // If contact has user account, create internal message
+        if (recipientUserId && recipientUserId.trim() !== '') {
+          await db.create('messages.json', {
+            FromUserId: req.session.user.UniqueId,
+            ToUserId: recipientUserId,
+            Subject: Subject || '(No Subject)',
+            MessageBody: MessageBody,
+            MessageType: 'email',
+            IsRead: false,
+            ReadAt: '',
+            SentAt: new Date().toISOString(),
+            ParentMessageId: '',
+            ThreadId: '',
+            Attachments: []
+          });
+        }
+
+        // If SendEmail is checked and email is configured, send actual email
+        if (SendEmail === 'on' && process.env.EMAIL_ENABLED === 'true' && contact.Email) {
+          try {
+            const transporter = nodemailer.createTransport({
+              host: process.env.EMAIL_HOST,
+              port: process.env.EMAIL_PORT,
+              secure: process.env.EMAIL_SECURE === 'true',
+              auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD
+              }
+            });
+
+            await transporter.sendMail({
+              from: process.env.EMAIL_FROM || '"LegacyKeeper" <noreply@legacykeeper.com>',
+              to: contact.Email,
+              subject: `Message from ${req.session.user.FirstName} ${req.session.user.LastName}: ${Subject || '(No Subject)'}`,
+              html: `
+                <h2>You have received a message from LegacyKeeper</h2>
+                <p><strong>From:</strong> ${req.session.user.FirstName} ${req.session.user.LastName} (${req.session.user.Email})</p>
+                <p><strong>To:</strong> ${contact.FirstName} ${contact.LastName}</p>
+                <p><strong>Subject:</strong> ${Subject || '(No Subject)'}</p>
+                <hr>
+                <p>${MessageBody.replace(/\n/g, '<br>')}</p>
+                <hr>
+                <p><a href="${process.env.APP_URL || 'http://localhost:3000'}/messages">View on LegacyKeeper</a></p>
+              `
+            });
+          } catch (emailError) {
+            console.error(`Error sending email to ${contact.Email}:`, emailError);
+            // Don't fail the whole process if one email fails
+          }
+        }
+
+        successCount++;
+      } catch (error) {
+        console.error(`Error sending message to contact ${contact.FirstName} ${contact.LastName}:`, error);
+        failCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      req.flash('success_msg', `Bulk email sent successfully to ${successCount} contact(s)` +
+        (failCount > 0 ? `. ${failCount} failed.` : ''));
+    } else {
+      req.flash('error_msg', 'Failed to send bulk email to any contacts');
+    }
+
+    res.redirect('/messages');
+  } catch (error) {
+    console.error('Error sending bulk email:', error);
+    req.flash('error_msg', 'Error sending bulk email');
+    res.redirect('/messages/bulk-email');
+  }
+});
+
 module.exports = router;

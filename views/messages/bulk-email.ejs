@@ -1,0 +1,177 @@
+<%- include('../partials/header') %>
+
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-10 offset-md-1">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">
+            <i class="fas fa-envelope-open-text"></i> Bulk Email to Contacts
+          </h4>
+        </div>
+        <div class="card-body">
+          <% if (contactsWithEmail === 0) { %>
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i>
+              You don't have any contacts with email addresses. Please add contacts with email addresses before sending bulk emails.
+            </div>
+            <a href="/contacts" class="btn btn-primary">
+              <i class="fas fa-users"></i> Manage Contacts
+            </a>
+            <a href="/messages" class="btn btn-secondary">
+              <i class="fas fa-arrow-left"></i> Back to Messages
+            </a>
+          <% } else { %>
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i>
+              You can send an email to <strong><%= contactsWithEmail %></strong> contact(s) with email addresses.
+              Select specific contacts below or leave all unchecked to send to all contacts.
+            </div>
+
+            <form action="/messages/bulk-email/send" method="POST">
+              <div class="form-group">
+                <label for="Subject">Subject</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="Subject"
+                  name="Subject"
+                  placeholder="Enter email subject (optional)"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="MessageBody">Message *</label>
+                <textarea
+                  class="form-control"
+                  id="MessageBody"
+                  name="MessageBody"
+                  rows="8"
+                  required
+                  placeholder="Enter your message here..."
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label>
+                  <strong>Select Recipients:</strong>
+                  <small class="text-muted">(Leave all unchecked to send to all contacts with email)</small>
+                </label>
+                <div class="border p-3 rounded" style="max-height: 300px; overflow-y: auto;">
+                  <% if (contacts.length === 0) { %>
+                    <p class="text-muted mb-0">No contacts found.</p>
+                  <% } else { %>
+                    <div class="form-check mb-2">
+                      <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="selectAll"
+                        onchange="toggleAllContacts(this)"
+                      />
+                      <label class="form-check-label font-weight-bold" for="selectAll">
+                        Select / Deselect All
+                      </label>
+                    </div>
+                    <hr class="my-2">
+                    <% contacts.forEach(contact => { %>
+                      <% if (contact.Email && contact.Email.trim() !== '') { %>
+                        <div class="form-check">
+                          <input
+                            type="checkbox"
+                            class="form-check-input contact-checkbox"
+                            id="contact_<%= contact.UniqueId %>"
+                            name="SelectedContacts"
+                            value="<%= contact.UniqueId %>"
+                          />
+                          <label class="form-check-label" for="contact_<%= contact.UniqueId %>">
+                            <%= contact.FirstName %> <%= contact.LastName %>
+                            <small class="text-muted">(<%= contact.Email %>)</small>
+                            <% if (contact.Relationship) { %>
+                              <span class="badge badge-secondary"><%= contact.Relationship %></span>
+                            <% } %>
+                          </label>
+                        </div>
+                      <% } else { %>
+                        <div class="form-check">
+                          <input
+                            type="checkbox"
+                            class="form-check-input"
+                            disabled
+                          />
+                          <label class="form-check-label text-muted">
+                            <%= contact.FirstName %> <%= contact.LastName %>
+                            <small>(No email address)</small>
+                          </label>
+                        </div>
+                      <% } %>
+                    <% }) %>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="custom-control custom-checkbox">
+                  <input
+                    type="checkbox"
+                    class="custom-control-input"
+                    id="SendEmail"
+                    name="SendEmail"
+                  />
+                  <label class="custom-control-label" for="SendEmail">
+                    Also send as external email (if email service is configured)
+                    <small class="text-muted d-block">
+                      This will send actual emails to the contacts' email addresses in addition to creating internal messages.
+                    </small>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">
+                  <i class="fas fa-paper-plane"></i> Send Bulk Email
+                </button>
+                <a href="/messages" class="btn btn-secondary btn-lg">
+                  <i class="fas fa-times"></i> Cancel
+                </a>
+              </div>
+            </form>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleAllContacts(checkbox) {
+    const contactCheckboxes = document.querySelectorAll('.contact-checkbox');
+    contactCheckboxes.forEach(cb => {
+      cb.checked = checkbox.checked;
+    });
+  }
+
+  // Update "Select All" checkbox state when individual checkboxes change
+  document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const contactCheckboxes = document.querySelectorAll('.contact-checkbox');
+
+    contactCheckboxes.forEach(cb => {
+      cb.addEventListener('change', function() {
+        const allChecked = Array.from(contactCheckboxes).every(checkbox => checkbox.checked);
+        const noneChecked = Array.from(contactCheckboxes).every(checkbox => !checkbox.checked);
+
+        if (allChecked) {
+          selectAllCheckbox.checked = true;
+          selectAllCheckbox.indeterminate = false;
+        } else if (noneChecked) {
+          selectAllCheckbox.checked = false;
+          selectAllCheckbox.indeterminate = false;
+        } else {
+          selectAllCheckbox.indeterminate = true;
+        }
+      });
+    });
+  });
+</script>
+
+<%- include('../partials/footer') %>
