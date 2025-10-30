@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Convert Contact to User - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .info-box {
+      background: rgba(74, 144, 226, 0.1);
+      border-left: 4px solid var(--accent-primary);
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border-radius: 5px;
+    }
+    .info-box h3 {
+      margin-top: 0;
+      color: var(--accent-primary);
+    }
+    .info-box ul {
+      margin: 0.5rem 0;
+      padding-left: 1.5rem;
+    }
+    .contact-info {
+      background: var(--bg-tertiary);
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+    }
+    .contact-info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .contact-info-row:last-child {
+      border-bottom: none;
+    }
+    .contact-info-label {
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .contact-info-value {
+      color: var(--text-primary);
+    }
+    .warning-box {
+      background: rgba(255, 152, 0, 0.1);
+      border-left: 4px solid var(--warning-color);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 5px;
+    }
+    .warning-box h4 {
+      margin-top: 0;
+      color: var(--warning-color);
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="form-container" style="max-width: 700px;">
+      <h2 class="card-title">Convert Contact to User Account</h2>
+
+      <div class="info-box">
+        <h3>What does this do?</h3>
+        <p>Converting a contact to a user account will:</p>
+        <ul>
+          <li>Create a full user account with login credentials</li>
+          <li>Link the user account to this contact record</li>
+          <li>Allow the person to log in and manage their own legacy information</li>
+          <li>Transfer contact information (name, email, phone, address) to the user profile</li>
+          <li>Preserve the original contact record with the association</li>
+        </ul>
+      </div>
+
+      <div class="contact-info">
+        <h3 style="margin-top: 0; color: var(--accent-primary);">Contact Information</h3>
+        <div class="contact-info-row">
+          <span class="contact-info-label">Name:</span>
+          <span class="contact-info-value"><%= contact.FirstName %> <%= contact.LastName %></span>
+        </div>
+        <div class="contact-info-row">
+          <span class="contact-info-label">Email:</span>
+          <span class="contact-info-value"><%= contact.Email || '(Not provided)' %></span>
+        </div>
+        <% if (contact.PhoneNumber) { %>
+          <div class="contact-info-row">
+            <span class="contact-info-label">Phone:</span>
+            <span class="contact-info-value"><%= contact.PhoneNumber %></span>
+          </div>
+        <% } %>
+        <% if (contact.Address) { %>
+          <div class="contact-info-row">
+            <span class="contact-info-label">Address:</span>
+            <span class="contact-info-value"><%= contact.Address %></span>
+          </div>
+        <% } %>
+        <% if (contact.Relationship) { %>
+          <div class="contact-info-row">
+            <span class="contact-info-label">Relationship:</span>
+            <span class="contact-info-value"><%= contact.Relationship %></span>
+          </div>
+        <% } %>
+      </div>
+
+      <% if (!contact.Email || contact.Email.trim() === '') { %>
+        <div class="warning-box">
+          <h4>Email Required</h4>
+          <p>This contact does not have an email address. Please <a href="/contacts/<%= contact.UniqueId %>/edit" style="color: var(--accent-primary);">edit the contact</a> and add an email address before converting to a user account.</p>
+        </div>
+        <a href="/contacts" class="btn btn-secondary">Back to Contacts</a>
+      <% } else { %>
+        <form action="/contacts/<%= contact.UniqueId %>/convert-to-user" method="POST">
+          <div class="form-group">
+            <label for="Password">Password: *</label>
+            <input type="password" id="Password" name="Password" class="form-control" required minlength="6">
+            <small style="color: var(--text-secondary);">Must be at least 6 characters</small>
+          </div>
+
+          <div class="form-group">
+            <label for="Password2">Confirm Password: *</label>
+            <input type="password" id="Password2" name="Password2" class="form-control" required minlength="6">
+          </div>
+
+          <div class="form-group">
+            <label for="Role">User Role: *</label>
+            <select id="Role" name="Role" class="form-control" required>
+              <option value="user">User (Standard Access)</option>
+              <option value="admin">Admin (Full System Access)</option>
+            </select>
+            <small style="color: var(--text-secondary);">Most users should have the "User" role</small>
+          </div>
+
+          <div class="form-group">
+            <label for="AccountStatus">Account Status: *</label>
+            <select id="AccountStatus" name="AccountStatus" class="form-control" required>
+              <option value="active">Active (Can log in immediately)</option>
+              <option value="inactive">Inactive (Cannot log in)</option>
+            </select>
+          </div>
+
+          <div class="warning-box">
+            <h4>Important Information</h4>
+            <ul style="margin: 0.5rem 0;">
+              <li>The user will be able to log in with email: <strong><%= contact.Email %></strong></li>
+              <li>Make sure to securely share the password with them</li>
+              <li>They can change their password after first login</li>
+              <li>This action cannot be easily undone</li>
+            </ul>
+          </div>
+
+          <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary">Create User Account</button>
+            <a href="/contacts" class="btn btn-secondary">Cancel</a>
+          </div>
+        </form>
+      <% } %>
+    </div>
+  </div>
+
+  <script>
+    // Password match validation
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.querySelector('form');
+      if (!form) return;
+
+      const password = document.getElementById('Password');
+      const password2 = document.getElementById('Password2');
+
+      form.addEventListener('submit', function(e) {
+        if (password.value !== password2.value) {
+          e.preventDefault();
+          alert('Passwords do not match!');
+          password2.focus();
+          return false;
+        }
+
+        if (password.value.length < 6) {
+          e.preventDefault();
+          alert('Password must be at least 6 characters long!');
+          password.focus();
+          return false;
+        }
+
+        // Confirm action
+        const confirmMsg = 'Are you sure you want to convert this contact to a user account?\n\n' +
+                          'This will create a new login account for:\n' +
+                          '<%= contact.FirstName %> <%= contact.LastName %>\n' +
+                          'Email: <%= contact.Email %>';
+
+        if (!confirm(confirmMsg)) {
+          e.preventDefault();
+          return false;
+        }
+      });
+
+      // Real-time password match indicator
+      password2.addEventListener('input', function() {
+        if (password2.value === '') {
+          password2.style.borderColor = '';
+          return;
+        }
+
+        if (password.value === password2.value) {
+          password2.style.borderColor = 'var(--success-color)';
+        } else {
+          password2.style.borderColor = 'var(--error-color)';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= contactGroup.GroupName %> - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .group-header {
+      background: var(--bg-tertiary);
+      padding: 2rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .group-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: bold;
+      color: white;
+      flex-shrink: 0;
+    }
+    .group-header-info h2 {
+      margin: 0 0 0.5rem 0;
+      color: var(--text-primary);
+    }
+    .group-meta {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .info-section {
+      background: var(--bg-tertiary);
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+    }
+    .info-section h3 {
+      margin-top: 0;
+      color: var(--accent-primary);
+      margin-bottom: 1rem;
+    }
+    .info-row {
+      display: flex;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      font-weight: 600;
+      color: var(--text-secondary);
+      width: 150px;
+      flex-shrink: 0;
+    }
+    .info-value {
+      color: var(--text-primary);
+      flex: 1;
+    }
+    .members-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .member-card {
+      background: var(--bg-secondary);
+      padding: 1rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      border: 1px solid var(--border-color);
+      transition: all 0.2s;
+    }
+    .member-card:hover {
+      border-color: var(--accent-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+    }
+    .member-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: white;
+      flex-shrink: 0;
+    }
+    .member-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .member-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .member-details {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-secondary);
+    }
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="form-container" style="max-width: 900px;">
+      <div class="group-header">
+        <div class="group-avatar">
+          <%= contactGroup.GroupName.charAt(0) %>
+        </div>
+        <div class="group-header-info">
+          <h2><%= contactGroup.GroupName %></h2>
+          <div class="group-meta">
+            <%= memberDetails.length %> member<%= memberDetails.length !== 1 ? 's' : '' %>
+            <% if (contactGroup.CreatedAt) { %>
+              • Created <%= new Date(contactGroup.CreatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Group Information -->
+      <div class="info-section">
+        <h3>Group Information</h3>
+        <div class="info-row">
+          <div class="info-label">Group Name:</div>
+          <div class="info-value"><%= contactGroup.GroupName %></div>
+        </div>
+        <% if (contactGroup.Description) { %>
+          <div class="info-row">
+            <div class="info-label">Description:</div>
+            <div class="info-value"><%= contactGroup.Description %></div>
+          </div>
+        <% } %>
+        <div class="info-row">
+          <div class="info-label">Total Members:</div>
+          <div class="info-value"><%= memberDetails.length %></div>
+        </div>
+        <% if (contactGroup.CreatedAt) { %>
+          <div class="info-row">
+            <div class="info-label">Created:</div>
+            <div class="info-value"><%= new Date(contactGroup.CreatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></div>
+          </div>
+        <% } %>
+        <% if (contactGroup.UpdatedAt) { %>
+          <div class="info-row">
+            <div class="info-label">Last Updated:</div>
+            <div class="info-value"><%= new Date(contactGroup.UpdatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></div>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Members -->
+      <div class="info-section">
+        <h3>Group Members</h3>
+        <% if (memberDetails.length === 0) { %>
+          <div class="empty-state">
+            <div class="empty-state-icon">👥</div>
+            <p>No members in this group yet.</p>
+            <a href="/contact-groups/<%= contactGroup.UniqueId %>/edit" class="btn btn-primary" style="margin-top: 1rem;">Add Members</a>
+          </div>
+        <% } else { %>
+          <div class="members-grid">
+            <% memberDetails.forEach(member => { %>
+              <div class="member-card">
+                <div class="member-avatar">
+                  <%= member.FirstName.charAt(0) %><%= member.LastName ? member.LastName.charAt(0) : '' %>
+                </div>
+                <div class="member-info">
+                  <div class="member-name"><%= member.FirstName %> <%= member.LastName %></div>
+                  <div class="member-details">
+                    <%= member.Email || 'No email' %>
+                    <% if (member.PhoneNumber) { %>
+                      <br><%= member.PhoneNumber %>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Actions -->
+      <div class="action-buttons">
+        <a href="/contact-groups/<%= contactGroup.UniqueId %>/edit" class="btn btn-primary">Edit Group</a>
+        <a href="/contact-groups" class="btn btn-secondary">Back to Groups</a>
+        <form action="/contact-groups/<%= contactGroup.UniqueId %>?_method=DELETE" method="POST" style="display: inline;">
+          <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this contact group? This action cannot be undone.');">Delete Group</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

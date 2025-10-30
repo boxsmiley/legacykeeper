@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connection Details - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .connection-header {
+      background: var(--bg-tertiary);
+      padding: 2rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .connection-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: bold;
+      color: white;
+      flex-shrink: 0;
+    }
+    .connection-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .connection-header-info h2 {
+      margin: 0 0 0.5rem 0;
+      color: var(--text-primary);
+    }
+    .connection-type-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      background: var(--accent-primary);
+      color: white;
+      margin-right: 0.5rem;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .status-badge.active {
+      background: rgba(40, 167, 69, 0.1);
+      color: var(--success-color);
+    }
+    .status-badge.inactive {
+      background: rgba(108, 117, 125, 0.1);
+      color: var(--text-secondary);
+    }
+    .status-badge.suspended {
+      background: rgba(220, 53, 69, 0.1);
+      color: var(--error-color);
+    }
+    .info-section {
+      background: var(--bg-tertiary);
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+    }
+    .info-section h3 {
+      margin-top: 0;
+      color: var(--accent-primary);
+      margin-bottom: 1rem;
+    }
+    .info-row {
+      display: flex;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      font-weight: 600;
+      color: var(--text-secondary);
+      width: 180px;
+      flex-shrink: 0;
+    }
+    .info-value {
+      color: var(--text-primary);
+      flex: 1;
+    }
+    .permission-badge {
+      display: inline-block;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .permission-badge.granted {
+      background: rgba(40, 167, 69, 0.1);
+      color: var(--success-color);
+    }
+    .permission-badge.denied {
+      background: rgba(108, 117, 125, 0.1);
+      color: var(--text-secondary);
+    }
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .members-list {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .member-card {
+      background: var(--bg-secondary);
+      padding: 1rem;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .member-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: bold;
+      color: white;
+      flex-shrink: 0;
+    }
+    .member-info {
+      flex: 1;
+    }
+    .member-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+    .member-details {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="form-container" style="max-width: 800px;">
+      <div class="connection-header">
+        <div class="connection-avatar">
+          <% if (connection.ConnectionType === 'user' && connectedEntity.ProfilePicture) { %>
+            <img src="<%= connectedEntity.ProfilePicture %>" alt="<%= connectedEntity.FirstName %>">
+          <% } else if (connection.ConnectionType === 'user') { %>
+            <%= connectedEntity.FirstName.charAt(0) %><%= connectedEntity.LastName ? connectedEntity.LastName.charAt(0) : '' %>
+          <% } else if (connection.ConnectionType === 'contact') { %>
+            <%= connectedEntity.FirstName.charAt(0) %><%= connectedEntity.LastName ? connectedEntity.LastName.charAt(0) : '' %>
+          <% } else { %>
+            <%= connectedEntity.GroupName.charAt(0) %>
+          <% } %>
+        </div>
+        <div class="connection-header-info">
+          <h2>
+            <% if (connection.ConnectionType === 'user' || connection.ConnectionType === 'contact') { %>
+              <%= connectedEntity.FirstName %> <%= connectedEntity.LastName %>
+            <% } else { %>
+              <%= connectedEntity.GroupName %>
+            <% } %>
+          </h2>
+          <div>
+            <span class="connection-type-badge">
+              <%= connection.ConnectionType === 'user' ? 'User' : connection.ConnectionType === 'contact' ? 'Contact' : 'Contact Group' %>
+            </span>
+            <span class="status-badge <%= connection.ConnectionStatus %>">
+              <%= connection.ConnectionStatus.charAt(0).toUpperCase() + connection.ConnectionStatus.slice(1) %>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connection Information -->
+      <div class="info-section">
+        <h3>Connection Information</h3>
+        <div class="info-row">
+          <div class="info-label">Connection Type:</div>
+          <div class="info-value">
+            <%= connection.ConnectionType === 'user' ? 'User' : connection.ConnectionType === 'contact' ? 'Contact' : 'Contact Group' %>
+          </div>
+        </div>
+        <% if (connection.RelationshipType) { %>
+          <div class="info-row">
+            <div class="info-label">Relationship:</div>
+            <div class="info-value"><%= connection.RelationshipType %></div>
+          </div>
+        <% } %>
+        <div class="info-row">
+          <div class="info-label">Status:</div>
+          <div class="info-value">
+            <span class="status-badge <%= connection.ConnectionStatus %>">
+              <%= connection.ConnectionStatus.charAt(0).toUpperCase() + connection.ConnectionStatus.slice(1) %>
+            </span>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Connected Since:</div>
+          <div class="info-value"><%= new Date(connection.ConnectedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></div>
+        </div>
+        <% if (connection.Notes) { %>
+          <div class="info-row">
+            <div class="info-label">Notes:</div>
+            <div class="info-value"><%= connection.Notes %></div>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Entity Details -->
+      <div class="info-section">
+        <h3>
+          <% if (connection.ConnectionType === 'user' || connection.ConnectionType === 'contact') { %>
+            Contact Details
+          <% } else { %>
+            Group Details
+          <% } %>
+        </h3>
+        <% if (connection.ConnectionType === 'user') { %>
+          <div class="info-row">
+            <div class="info-label">Email:</div>
+            <div class="info-value"><%= connectedEntity.Email %></div>
+          </div>
+          <% if (connectedEntity.PhoneNumber) { %>
+            <div class="info-row">
+              <div class="info-label">Phone:</div>
+              <div class="info-value"><%= connectedEntity.PhoneNumber %></div>
+            </div>
+          <% } %>
+          <div class="info-row">
+            <div class="info-label">Role:</div>
+            <div class="info-value"><%= connectedEntity.Role === 'admin' ? 'Administrator' : 'User' %></div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Account Status:</div>
+            <div class="info-value">
+              <span class="status-badge <%= connectedEntity.AccountStatus %>">
+                <%= connectedEntity.AccountStatus.charAt(0).toUpperCase() + connectedEntity.AccountStatus.slice(1) %>
+              </span>
+            </div>
+          </div>
+        <% } else if (connection.ConnectionType === 'contact') { %>
+          <% if (connectedEntity.Email) { %>
+            <div class="info-row">
+              <div class="info-label">Email:</div>
+              <div class="info-value"><%= connectedEntity.Email %></div>
+            </div>
+          <% } %>
+          <% if (connectedEntity.PhoneNumber) { %>
+            <div class="info-row">
+              <div class="info-label">Phone:</div>
+              <div class="info-value"><%= connectedEntity.PhoneNumber %></div>
+            </div>
+          <% } %>
+          <% if (connectedEntity.Address) { %>
+            <div class="info-row">
+              <div class="info-label">Address:</div>
+              <div class="info-value"><%= connectedEntity.Address %></div>
+            </div>
+          <% } %>
+          <% if (connectedEntity.Relationship) { %>
+            <div class="info-row">
+              <div class="info-label">Relationship:</div>
+              <div class="info-value"><%= connectedEntity.Relationship %></div>
+            </div>
+          <% } %>
+        <% } else if (connection.ConnectionType === 'contact_group') { %>
+          <% if (connectedEntity.Description) { %>
+            <div class="info-row">
+              <div class="info-label">Description:</div>
+              <div class="info-value"><%= connectedEntity.Description %></div>
+            </div>
+          <% } %>
+          <div class="info-row">
+            <div class="info-label">Members:</div>
+            <div class="info-value"><%= connectedEntity.Members ? connectedEntity.Members.length : 0 %> members</div>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Permissions -->
+      <div class="info-section">
+        <h3>Permissions</h3>
+        <div class="info-row">
+          <div class="info-label">View Documents:</div>
+          <div class="info-value">
+            <span class="permission-badge <%= connection.CanViewDocuments ? 'granted' : 'denied' %>">
+              <%= connection.CanViewDocuments ? '✓ Granted' : '✗ Denied' %>
+            </span>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">View Assets:</div>
+          <div class="info-value">
+            <span class="permission-badge <%= connection.CanViewAssets ? 'granted' : 'denied' %>">
+              <%= connection.CanViewAssets ? '✓ Granted' : '✗ Denied' %>
+            </span>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Notify on Updates:</div>
+          <div class="info-value">
+            <span class="permission-badge <%= connection.NotifyOnUpdates ? 'granted' : 'denied' %>">
+              <%= connection.NotifyOnUpdates ? '✓ Enabled' : '✗ Disabled' %>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Group Members (if contact group) -->
+      <% if (connection.ConnectionType === 'contact_group' && connectedEntity.MemberDetails && connectedEntity.MemberDetails.length > 0) { %>
+        <div class="info-section">
+          <h3>Group Members (<%= connectedEntity.MemberDetails.length %>)</h3>
+          <div class="members-list">
+            <% connectedEntity.MemberDetails.forEach(member => { %>
+              <div class="member-card">
+                <div class="member-avatar">
+                  <%= member.FirstName.charAt(0) %><%= member.LastName ? member.LastName.charAt(0) : '' %>
+                </div>
+                <div class="member-info">
+                  <div class="member-name"><%= member.FirstName %> <%= member.LastName %></div>
+                  <div class="member-details">
+                    <%= member.Email || 'No email' %>
+                    <% if (member.PhoneNumber) { %> • <%= member.PhoneNumber %><% } %>
+                  </div>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+      <% } %>
+
+      <!-- Actions -->
+      <div class="action-buttons">
+        <a href="/connections/<%= connection.UniqueId %>/edit" class="btn btn-primary">Edit Connection</a>
+        <% if (connection.ConnectionType === 'user') { %>
+          <a href="/chat?with=<%= connectedEntity.UniqueId %>" class="btn btn-secondary">Send Message</a>
+        <% } %>
+        <a href="/connections" class="btn btn-secondary">Back to Connections</a>
+        <form action="/connections/<%= connection.UniqueId %>?_method=DELETE" method="POST" style="display: inline;">
+          <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to remove this connection?');">Remove Connection</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

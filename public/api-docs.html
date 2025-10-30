@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LegacyKeeper API Documentation</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    #swagger-ui {
+      max-width: 1460px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .swagger-ui .topbar {
+      display: none;
+    }
+
+    .custom-header {
+      background: linear-gradient(135deg, #4a9eff, #6eb5ff);
+      color: white;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .custom-header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      font-weight: bold;
+    }
+
+    .custom-header p {
+      margin: 0.5rem 0 0 0;
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin: 1rem;
+      padding: 0.75rem 1.5rem;
+      background: #4a9eff;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+
+    .back-link:hover {
+      background: #3d85d9;
+    }
+
+    .info-section {
+      max-width: 1460px;
+      margin: 2rem auto;
+      padding: 0 20px;
+    }
+
+    .info-card {
+      background: #f8f9fa;
+      border-left: 4px solid #4a9eff;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      border-radius: 5px;
+    }
+
+    .info-card h3 {
+      margin-top: 0;
+      color: #4a9eff;
+    }
+
+    .info-card ul {
+      margin: 0.5rem 0;
+      padding-left: 1.5rem;
+    }
+
+    .info-card code {
+      background: #e9ecef;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="custom-header">
+    <h1>LegacyKeeper API Documentation</h1>
+    <p>Complete REST API Reference</p>
+  </div>
+
+  <div style="text-align: center; margin-top: 1rem;">
+    <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+  </div>
+
+  <div class="info-section">
+    <div class="info-card">
+      <h3>📖 About This Documentation</h3>
+      <p>
+        This interactive API documentation is generated from the LegacyKeeper OpenAPI 3.0 specification.
+        You can explore all available endpoints, request/response schemas, and even try out API calls directly from this page.
+      </p>
+    </div>
+
+    <div class="info-card">
+      <h3>🔐 Authentication</h3>
+      <p>
+        Most endpoints require authentication via Express session cookies. To use the "Try it out" feature:
+      </p>
+      <ul>
+        <li>Make sure you're logged into LegacyKeeper in another tab</li>
+        <li>Your session cookie will be automatically included in API requests</li>
+        <li>Some endpoints require admin privileges (indicated in the documentation)</li>
+      </ul>
+    </div>
+
+    <div class="info-card">
+      <h3>📦 Downloading the Spec</h3>
+      <p>
+        You can download the OpenAPI specification file for use with other tools:
+      </p>
+      <ul>
+        <li><a href="/openapi.yaml" download>Download openapi.yaml</a></li>
+        <li>Use with Postman, Insomnia, or other API clients</li>
+        <li>Generate client SDKs using OpenAPI Generator</li>
+      </ul>
+    </div>
+
+    <div class="info-card">
+      <h3>🎯 Quick Links</h3>
+      <p>Jump to commonly used endpoints:</p>
+      <ul>
+        <li><strong>Authentication:</strong> <code>POST /login</code>, <code>POST /register</code></li>
+        <li><strong>Profile:</strong> <code>GET /profile</code>, <code>POST /profile/update</code></li>
+        <li><strong>Documents:</strong> <code>GET /documents</code>, <code>POST /documents</code></li>
+        <li><strong>Contacts:</strong> <code>GET /contacts</code>, <code>POST /contacts</code></li>
+        <li><strong>Messages:</strong> <code>GET /messages</code>, <code>POST /messages/send</code></li>
+        <li><strong>Chat:</strong> <code>POST /chat/{conversationId}/send</code> (AJAX API)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="swagger-ui"></div>
+
+  <script src="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.onload = function() {
+      // Initialize Swagger UI
+      const ui = SwaggerUIBundle({
+        url: '/openapi.yaml',
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: "StandaloneLayout",
+        defaultModelsExpandDepth: 1,
+        defaultModelExpandDepth: 3,
+        docExpansion: 'list',
+        filter: true,
+        showRequestHeaders: true,
+        tryItOutEnabled: true,
+        requestInterceptor: (request) => {
+          // Ensure credentials are included for session-based auth
+          request.credentials = 'include';
+          return request;
+        },
+        onComplete: () => {
+          console.log('Swagger UI loaded successfully');
+        }
+      });
+
+      window.ui = ui;
+    };
+  </script>
+</body>
+</html>

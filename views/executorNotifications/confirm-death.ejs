@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Death - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .death-report-container {
+      background: white;
+      max-width: 600px;
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 3rem;
+    }
+    .death-report-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .death-report-header h1 {
+      color: #333;
+      margin: 0 0 0.5rem 0;
+      font-size: 1.8rem;
+    }
+    .death-report-header p {
+      color: #666;
+      font-size: 1rem;
+    }
+    .warning-box {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+    .warning-box h3 {
+      color: #856404;
+      margin: 0 0 0.5rem 0;
+      font-size: 1.1rem;
+    }
+    .warning-box p {
+      color: #856404;
+      margin: 0;
+      line-height: 1.6;
+    }
+    .user-info {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+    .user-info h3 {
+      color: #333;
+      margin: 0 0 1rem 0;
+    }
+    .user-info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #dee2e6;
+    }
+    .user-info-row:last-child {
+      border-bottom: none;
+    }
+    .user-info-label {
+      font-weight: 600;
+      color: #495057;
+    }
+    .user-info-value {
+      color: #212529;
+    }
+    .confirmation-form {
+      margin-top: 2rem;
+    }
+    .confirmation-checkbox {
+      display: flex;
+      align-items: start;
+      gap: 0.75rem;
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    .confirmation-checkbox input {
+      margin-top: 0.25rem;
+    }
+    .confirmation-checkbox label {
+      flex: 1;
+      cursor: pointer;
+      color: #495057;
+      line-height: 1.6;
+    }
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .btn-confirm {
+      flex: 1;
+      padding: 1rem;
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-confirm:hover:not(:disabled) {
+      background: #c82333;
+    }
+    .btn-confirm:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+    }
+    .btn-cancel {
+      flex: 1;
+      padding: 1rem;
+      background: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      display: inline-block;
+      transition: background 0.2s;
+    }
+    .btn-cancel:hover {
+      background: #5a6268;
+    }
+  </style>
+</head>
+<body>
+  <div class="death-report-container">
+    <div class="death-report-header">
+      <h1>Report Death Notification</h1>
+      <p>LegacyKeeper Executor Portal</p>
+    </div>
+
+    <div class="warning-box">
+      <h3>⚠️ Important Notice</h3>
+      <p>This action is irreversible and should only be taken if you can confirm that the account holder has passed away. By submitting this report, you will notify all of their designated connections.</p>
+    </div>
+
+    <div class="user-info">
+      <h3>Account Holder Information</h3>
+      <div class="user-info-row">
+        <span class="user-info-label">Name:</span>
+        <span class="user-info-value"><%= user.FirstName %> <%= user.LastName %></span>
+      </div>
+      <div class="user-info-row">
+        <span class="user-info-label">Email:</span>
+        <span class="user-info-value"><%= user.Email %></span>
+      </div>
+    </div>
+
+    <form action="/executor-notifications/report-death/<%= token %>" method="POST" class="confirmation-form" id="deathReportForm">
+      <div class="form-group">
+        <label for="confirmedName">Your Full Name (Executor) *</label>
+        <input type="text" id="confirmedName" name="confirmedName" class="form-control" required placeholder="Enter your full name">
+      </div>
+
+      <div class="form-group">
+        <label for="additionalInfo">Additional Information (Optional)</label>
+        <textarea id="additionalInfo" name="additionalInfo" class="form-control" rows="4" placeholder="You may provide additional context such as date of death, funeral arrangements, or other relevant information..."></textarea>
+      </div>
+
+      <div class="confirmation-checkbox">
+        <input type="checkbox" id="confirmDeath" required>
+        <label for="confirmDeath">
+          I confirm that <strong><%= user.FirstName %> <%= user.LastName %></strong> has passed away, and I understand that this action will:
+          <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+            <li>Mark their account as deceased</li>
+            <li>Send notifications to all their connections</li>
+            <li>Grant access to posthumous documents as specified by the deceased</li>
+          </ul>
+        </label>
+      </div>
+
+      <div class="button-group">
+        <a href="/" class="btn-cancel">Cancel</a>
+        <button type="submit" id="submitBtn" class="btn-confirm" disabled>Confirm Death Report</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const checkbox = document.getElementById('confirmDeath');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('deathReportForm');
+
+    checkbox.addEventListener('change', function() {
+      submitBtn.disabled = !this.checked;
+    });
+
+    form.addEventListener('submit', function(e) {
+      if (!checkbox.checked) {
+        e.preventDefault();
+        alert('Please confirm that you understand the implications of this action.');
+        return false;
+      }
+
+      const confirmedName = document.getElementById('confirmedName').value.trim();
+      if (!confirmedName) {
+        e.preventDefault();
+        alert('Please enter your full name.');
+        return false;
+      }
+
+      if (!confirm(`Are you absolutely certain that <%= user.FirstName %> <%= user.LastName %> has passed away? This action cannot be undone.`)) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  </script>
+</body>
+</html>

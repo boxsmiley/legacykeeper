@@ -1,0 +1,1560 @@
+openapi: 3.0.3
+info:
+  title: LegacyKeeper API
+  description: |
+    Complete API documentation for LegacyKeeper - A digital legacy management platform.
+
+    ## Authentication
+    Most endpoints require authentication via Express session cookies. Users must log in first.
+
+    ## Features
+    - User authentication and profile management
+    - Document management
+    - Contact and contact group management
+    - Digital asset management
+    - Financial asset management
+    - Legacy entries (messages, stories)
+    - Real-time chat functionality
+    - Messaging system with bulk email support
+    - Subscription management
+    - Admin user management
+    - Audit logging
+  version: 1.0.0
+  contact:
+    name: LegacyKeeper Support
+    email: support@legacykeeper.com
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://legacykeeper.com
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: User authentication and session management
+  - name: Profile
+    description: User profile management
+  - name: Dashboard
+    description: Dashboard and statistics
+  - name: Documents
+    description: Document management
+  - name: Contacts
+    description: Contact management
+  - name: Contact Groups
+    description: Contact group management
+  - name: Digital Assets
+    description: Digital asset management (online accounts, credentials)
+  - name: Financial Assets
+    description: Financial asset management (bank accounts, investments)
+  - name: Legacy Entries
+    description: Legacy messages and stories
+  - name: Messages
+    description: Internal messaging system
+  - name: Chat
+    description: Real-time chat conversations
+  - name: Subscriptions
+    description: User subscription management
+  - name: Subscription Plans
+    description: Admin subscription plan management
+  - name: Audit Logs
+    description: Activity audit logs
+  - name: Admin
+    description: Administrative functions
+
+paths:
+  # Authentication endpoints
+  /login:
+    get:
+      tags:
+        - Authentication
+      summary: Display login page
+      description: Renders the login form. Redirects to dashboard if already authenticated.
+      responses:
+        '200':
+          description: Login page HTML
+        '302':
+          description: Redirect to dashboard if already logged in
+
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate user
+      description: Validates credentials and creates session
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '302':
+          description: Redirect to dashboard on success, back to login on failure
+
+  /register:
+    get:
+      tags:
+        - Authentication
+      summary: Display registration page
+      responses:
+        '200':
+          description: Registration form HTML
+
+    post:
+      tags:
+        - Authentication
+      summary: Register new user
+      description: Creates a new user account
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - firstName
+                - lastName
+                - email
+                - password
+                - password2
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                password2:
+                  type: string
+                  format: password
+                  description: Password confirmation
+      responses:
+        '302':
+          description: Redirect to login on success
+
+  /logout:
+    get:
+      tags:
+        - Authentication
+      summary: Logout user
+      description: Destroys session and redirects to login
+      responses:
+        '302':
+          description: Redirect to login page
+
+  /auth/facebook:
+    get:
+      tags:
+        - Authentication
+      summary: Initiate Facebook OAuth
+      description: Redirects to Facebook for OAuth authentication
+      responses:
+        '302':
+          description: Redirect to Facebook OAuth
+
+  /auth/facebook/callback:
+    get:
+      tags:
+        - Authentication
+      summary: Facebook OAuth callback
+      description: Handles Facebook OAuth response and connects account
+      responses:
+        '302':
+          description: Redirect to profile on success
+
+  # Dashboard
+  /dashboard:
+    get:
+      tags:
+        - Dashboard
+      summary: Get user dashboard
+      description: Returns dashboard with statistics and user information
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Dashboard page with stats
+        '302':
+          description: Redirect to login if not authenticated
+
+  # Profile endpoints
+  /profile:
+    get:
+      tags:
+        - Profile
+      summary: View user profile
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Profile page HTML
+
+  /profile/edit:
+    get:
+      tags:
+        - Profile
+      summary: Display profile edit form
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Profile edit form HTML
+
+  /profile/update:
+    post:
+      tags:
+        - Profile
+      summary: Update user profile
+      description: Updates profile information including optional profile picture
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                FirstName:
+                  type: string
+                MiddleName:
+                  type: string
+                LastName:
+                  type: string
+                Email:
+                  type: string
+                  format: email
+                DateOfBirth:
+                  type: string
+                  format: date
+                PhoneNumber:
+                  type: string
+                MailingAddress:
+                  type: string
+                currentPassword:
+                  type: string
+                  format: password
+                newPassword:
+                  type: string
+                  format: password
+                confirmPassword:
+                  type: string
+                  format: password
+                profilePicture:
+                  type: string
+                  format: binary
+                  description: Profile picture file (JPEG, PNG, GIF, WebP, max 5MB)
+      responses:
+        '302':
+          description: Redirect to profile on success
+
+  /profile/connect/facebook:
+    get:
+      tags:
+        - Profile
+      summary: Connect Facebook account
+      description: Initiates Facebook OAuth to connect account
+      security:
+        - sessionAuth: []
+      responses:
+        '302':
+          description: Redirect to Facebook OAuth
+
+  /profile/disconnect/facebook:
+    post:
+      tags:
+        - Profile
+      summary: Disconnect Facebook account
+      security:
+        - sessionAuth: []
+      responses:
+        '302':
+          description: Redirect to profile
+
+  # Documents
+  /documents:
+    get:
+      tags:
+        - Documents
+      summary: List all user documents
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Documents list page
+
+    post:
+      tags:
+        - Documents
+      summary: Create new document
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DocumentInput'
+      responses:
+        '302':
+          description: Redirect to documents list
+
+  /documents/new:
+    get:
+      tags:
+        - Documents
+      summary: Display new document form
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: New document form HTML
+
+  /documents/{id}:
+    get:
+      tags:
+        - Documents
+      summary: View document details
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Document details page
+
+    delete:
+      tags:
+        - Documents
+      summary: Delete document
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '302':
+          description: Redirect to documents list
+
+  /documents/{id}/edit:
+    get:
+      tags:
+        - Documents
+      summary: Display edit document form
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Edit document form HTML
+
+  # Contacts
+  /contacts:
+    get:
+      tags:
+        - Contacts
+      summary: List all user contacts
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Contacts list page
+
+    post:
+      tags:
+        - Contacts
+      summary: Create new contact
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContactInput'
+      responses:
+        '302':
+          description: Redirect to contacts list
+
+  /contacts/new:
+    get:
+      tags:
+        - Contacts
+      summary: Display new contact form
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: New contact form HTML
+
+  /contacts/{id}/edit:
+    get:
+      tags:
+        - Contacts
+      summary: Display edit contact form
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Edit contact form HTML
+
+  /contacts/{id}:
+    put:
+      tags:
+        - Contacts
+      summary: Update contact
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContactInput'
+      responses:
+        '302':
+          description: Redirect to contacts list
+
+    delete:
+      tags:
+        - Contacts
+      summary: Delete contact
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '302':
+          description: Redirect to contacts list
+
+  # Contact Groups
+  /contact-groups:
+    get:
+      tags:
+        - Contact Groups
+      summary: List all contact groups
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Contact groups list page
+
+    post:
+      tags:
+        - Contact Groups
+      summary: Create new contact group
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContactGroupInput'
+      responses:
+        '302':
+          description: Redirect to contact groups list
+
+  /contact-groups/new:
+    get:
+      tags:
+        - Contact Groups
+      summary: Display new contact group form
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: New contact group form HTML
+
+  /contact-groups/{id}/edit:
+    get:
+      tags:
+        - Contact Groups
+      summary: Display edit contact group form
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Edit contact group form HTML
+
+  /contact-groups/{id}:
+    put:
+      tags:
+        - Contact Groups
+      summary: Update contact group
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContactGroupInput'
+      responses:
+        '302':
+          description: Redirect to contact groups list
+
+    delete:
+      tags:
+        - Contact Groups
+      summary: Delete contact group
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '302':
+          description: Redirect to contact groups list
+
+  # Digital Assets
+  /digital-assets:
+    get:
+      tags:
+        - Digital Assets
+      summary: List all digital assets
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Digital assets list page
+
+    post:
+      tags:
+        - Digital Assets
+      summary: Create new digital asset
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DigitalAssetInput'
+      responses:
+        '302':
+          description: Redirect to digital assets list
+
+  /digital-assets/new:
+    get:
+      tags:
+        - Digital Assets
+      summary: Display new digital asset form
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: New digital asset form HTML
+
+  /digital-assets/{id}/edit:
+    get:
+      tags:
+        - Digital Assets
+      summary: Display edit digital asset form
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Edit digital asset form HTML
+
+  /digital-assets/{id}:
+    put:
+      tags:
+        - Digital Assets
+      summary: Update digital asset
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DigitalAssetInput'
+      responses:
+        '302':
+          description: Redirect to digital assets list
+
+    delete:
+      tags:
+        - Digital Assets
+      summary: Delete digital asset
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '302':
+          description: Redirect to digital assets list
+
+  # Financial Assets
+  /financial-assets:
+    get:
+      tags:
+        - Financial Assets
+      summary: List all financial assets
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Financial assets list page
+
+    post:
+      tags:
+        - Financial Assets
+      summary: Create new financial asset
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FinancialAssetInput'
+      responses:
+        '302':
+          description: Redirect to financial assets list
+
+  /financial-assets/new:
+    get:
+      tags:
+        - Financial Assets
+      summary: Display new financial asset form
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: New financial asset form HTML
+
+  /financial-assets/{id}/edit:
+    get:
+      tags:
+        - Financial Assets
+      summary: Display edit financial asset form
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Edit financial asset form HTML
+
+  /financial-assets/{id}:
+    put:
+      tags:
+        - Financial Assets
+      summary: Update financial asset
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FinancialAssetInput'
+      responses:
+        '302':
+          description: Redirect to financial assets list
+
+    delete:
+      tags:
+        - Financial Assets
+      summary: Delete financial asset
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '302':
+          description: Redirect to financial assets list
+
+  # Legacy Entries
+  /legacy-entries:
+    get:
+      tags:
+        - Legacy Entries
+      summary: List all legacy entries
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Legacy entries list page
+
+    post:
+      tags:
+        - Legacy Entries
+      summary: Create new legacy entry
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LegacyEntryInput'
+      responses:
+        '302':
+          description: Redirect to legacy entries list
+
+  /legacy-entries/new:
+    get:
+      tags:
+        - Legacy Entries
+      summary: Display new legacy entry form
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: New legacy entry form HTML
+
+  /legacy-entries/{id}/edit:
+    get:
+      tags:
+        - Legacy Entries
+      summary: Display edit legacy entry form
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Edit legacy entry form HTML
+
+  /legacy-entries/{id}:
+    put:
+      tags:
+        - Legacy Entries
+      summary: Update legacy entry
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LegacyEntryInput'
+      responses:
+        '302':
+          description: Redirect to legacy entries list
+
+    delete:
+      tags:
+        - Legacy Entries
+      summary: Delete legacy entry
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '302':
+          description: Redirect to legacy entries list
+
+  # Messages
+  /messages:
+    get:
+      tags:
+        - Messages
+      summary: View message inbox
+      description: Shows received and sent messages in tabs
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Messages inbox page
+
+  /messages/compose:
+    get:
+      tags:
+        - Messages
+      summary: Display compose message form
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: to
+          in: query
+          description: Pre-fill recipient user ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Compose message form HTML
+
+  /messages/send:
+    post:
+      tags:
+        - Messages
+      summary: Send message
+      description: Send message to one or multiple users
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - ToUserId
+                - MessageBody
+              properties:
+                ToUserId:
+                  oneOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+                  description: User ID(s) to send message to
+                Subject:
+                  type: string
+                MessageBody:
+                  type: string
+                SendEmail:
+                  type: string
+                  enum: ['on']
+                  description: Whether to send email notification
+      responses:
+        '302':
+          description: Redirect to messages inbox
+
+  /messages/bulk-email:
+    get:
+      tags:
+        - Messages
+      summary: Display bulk email compose form
+      description: Shows form to select contacts/groups and compose bulk email
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Bulk email compose form HTML
+
+  /messages/bulk-email/send:
+    post:
+      tags:
+        - Messages
+      summary: Send bulk email
+      description: Send email to selected contacts and/or contact groups
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - MessageBody
+              properties:
+                Subject:
+                  type: string
+                MessageBody:
+                  type: string
+                SendEmail:
+                  type: string
+                  enum: ['on']
+                SelectedContacts:
+                  oneOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+                  description: Contact IDs to send to
+                SelectedGroups:
+                  oneOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+                  description: Contact group IDs to send to
+      responses:
+        '302':
+          description: Redirect to messages inbox
+
+  /messages/{id}:
+    get:
+      tags:
+        - Messages
+      summary: View message
+      description: View message details and mark as read
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Message view page
+
+    delete:
+      tags:
+        - Messages
+      summary: Delete message
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '302':
+          description: Redirect to messages inbox
+
+  /messages/{id}/reply:
+    get:
+      tags:
+        - Messages
+      summary: Reply to message
+      description: Opens compose form pre-filled to reply to message
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Compose reply form HTML
+
+  # Chat
+  /chat:
+    get:
+      tags:
+        - Chat
+      summary: List all conversations
+      description: Shows all chat conversations for the user
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Chat conversations list page
+
+  /chat/new:
+    get:
+      tags:
+        - Chat
+      summary: Start new chat
+      description: Shows form to select user to chat with
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: New chat form HTML
+
+  /chat/start:
+    post:
+      tags:
+        - Chat
+      summary: Create or open chat conversation
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - userId
+              properties:
+                userId:
+                  type: string
+                  description: User ID to chat with
+      responses:
+        '302':
+          description: Redirect to conversation
+
+  /chat/{conversationId}:
+    get:
+      tags:
+        - Chat
+      summary: View conversation
+      description: View chat messages and mark as read
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Chat conversation page
+
+    delete:
+      tags:
+        - Chat
+      summary: Delete conversation
+      description: Deletes conversation and all messages
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to chat list
+
+  /chat/{conversationId}/send:
+    post:
+      tags:
+        - Chat
+      summary: Send chat message
+      description: API endpoint to send chat message (AJAX)
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - messageText
+              properties:
+                messageText:
+                  type: string
+      responses:
+        '200':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    $ref: '#/components/schemas/ChatMessage'
+        '400':
+          description: Invalid request
+        '403':
+          description: Access denied
+        '404':
+          description: Conversation not found
+
+  /chat/{conversationId}/messages:
+    get:
+      tags:
+        - Chat
+      summary: Get chat messages
+      description: API endpoint to retrieve messages (for polling/real-time updates)
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: since
+          in: query
+          description: ISO timestamp to get messages since
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChatMessage'
+        '403':
+          description: Access denied
+        '404':
+          description: Conversation not found
+
+  # Subscriptions
+  /subscriptions:
+    get:
+      tags:
+        - Subscriptions
+      summary: View user subscriptions
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Subscriptions page
+
+  /subscriptions/{id}:
+    get:
+      tags:
+        - Subscriptions
+      summary: View subscription details
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Subscription details page
+
+  # Subscription Plans (Admin)
+  /subscription-plans:
+    get:
+      tags:
+        - Subscription Plans
+      summary: List all subscription plans
+      security:
+        - sessionAuth: []
+        - adminAuth: []
+      responses:
+        '200':
+          description: Subscription plans list page
+
+    post:
+      tags:
+        - Subscription Plans
+      summary: Create subscription plan
+      security:
+        - sessionAuth: []
+        - adminAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubscriptionPlanInput'
+      responses:
+        '302':
+          description: Redirect to plans list
+
+  /subscription-plans/new:
+    get:
+      tags:
+        - Subscription Plans
+      summary: Display new plan form
+      security:
+        - sessionAuth: []
+        - adminAuth: []
+      responses:
+        '200':
+          description: New plan form HTML
+
+  /subscription-plans/{id}/edit:
+    get:
+      tags:
+        - Subscription Plans
+      summary: Display edit plan form
+      security:
+        - sessionAuth: []
+        - adminAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Edit plan form HTML
+
+  /subscription-plans/{id}:
+    put:
+      tags:
+        - Subscription Plans
+      summary: Update subscription plan
+      security:
+        - sessionAuth: []
+        - adminAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubscriptionPlanInput'
+      responses:
+        '302':
+          description: Redirect to plans list
+
+    delete:
+      tags:
+        - Subscription Plans
+      summary: Delete subscription plan
+      security:
+        - sessionAuth: []
+        - adminAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '302':
+          description: Redirect to plans list
+
+  # Audit Logs
+  /audit-logs:
+    get:
+      tags:
+        - Audit Logs
+      summary: View audit logs
+      description: Shows user's activity logs
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Audit logs page
+
+  # Admin - User Management
+  /admin/users:
+    get:
+      tags:
+        - Admin
+      summary: List all users
+      security:
+        - sessionAuth: []
+        - adminAuth: []
+      responses:
+        '200':
+          description: Users list page
+
+    post:
+      tags:
+        - Admin
+      summary: Create new user
+      security:
+        - sessionAuth: []
+        - adminAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminUserInput'
+      responses:
+        '302':
+          description: Redirect to users list
+
+  /admin/users/new:
+    get:
+      tags:
+        - Admin
+      summary: Display new user form
+      security:
+        - sessionAuth: []
+        - adminAuth: []
+      responses:
+        '200':
+          description: New user form HTML
+
+  /admin/users/{id}/edit:
+    get:
+      tags:
+        - Admin
+      summary: Display edit user form
+      security:
+        - sessionAuth: []
+        - adminAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '200':
+          description: Edit user form HTML
+
+  /admin/users/{id}:
+    put:
+      tags:
+        - Admin
+      summary: Update user
+      security:
+        - sessionAuth: []
+        - adminAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminUserInput'
+      responses:
+        '302':
+          description: Redirect to users list
+
+    delete:
+      tags:
+        - Admin
+      summary: Delete user
+      security:
+        - sessionAuth: []
+        - adminAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdPathParam'
+      responses:
+        '302':
+          description: Redirect to users list
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+      description: Express session cookie
+    adminAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+      description: Admin role required
+
+  parameters:
+    IdPathParam:
+      name: id
+      in: path
+      required: true
+      description: Resource unique identifier
+      schema:
+        type: string
+
+  schemas:
+    DocumentInput:
+      type: object
+      required:
+        - DocumentName
+        - DocumentType
+      properties:
+        DocumentName:
+          type: string
+        DocumentType:
+          type: string
+          description: Type of document (e.g., Will, Trust, Insurance, etc.)
+        FileLocation:
+          type: string
+        Description:
+          type: string
+
+    ContactInput:
+      type: object
+      required:
+        - FirstName
+        - LastName
+      properties:
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+          format: email
+        PhoneNumber:
+          type: string
+        Address:
+          type: string
+        Relationship:
+          type: string
+        Notes:
+          type: string
+
+    ContactGroupInput:
+      type: object
+      required:
+        - GroupName
+      properties:
+        GroupName:
+          type: string
+        Description:
+          type: string
+        Members:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          description: Contact IDs to include in group
+
+    DigitalAssetInput:
+      type: object
+      required:
+        - AssetName
+        - AssetType
+      properties:
+        AssetName:
+          type: string
+        AssetType:
+          type: string
+          description: Type of digital asset (e.g., Email, Social Media, Cloud Storage)
+        LoginURL:
+          type: string
+          format: uri
+        UsernameIdentifier:
+          type: string
+        PasswordKey:
+          type: string
+        Notes:
+          type: string
+
+    FinancialAssetInput:
+      type: object
+      required:
+        - AssetName
+        - AssetType
+      properties:
+        AssetName:
+          type: string
+        AssetType:
+          type: string
+          description: Type of financial asset (e.g., Bank Account, Investment, Retirement)
+        LoginURL:
+          type: string
+          format: uri
+        UsernameIdentifier:
+          type: string
+        PasswordKey:
+          type: string
+        Notes:
+          type: string
+
+    LegacyEntryInput:
+      type: object
+      required:
+        - EntryTitle
+        - LegacyEntryType
+      properties:
+        EntryTitle:
+          type: string
+        LegacyEntryType:
+          type: string
+          description: Type of entry (e.g., Message, Story, Memory)
+        ContentText:
+          type: string
+        MediaFile:
+          type: string
+          description: Path to associated media file
+
+    SubscriptionPlanInput:
+      type: object
+      required:
+        - SubscriptionLevel
+      properties:
+        SubscriptionLevel:
+          type: string
+          description: Plan level (e.g., Basic, Premium, Enterprise)
+        PriceMonthly:
+          type: number
+          format: float
+        PriceAnnual:
+          type: number
+          format: float
+        StorageLimitGB:
+          type: integer
+        WorkUnitLimit:
+          type: integer
+        FeatureList:
+          type: string
+          description: Comma-separated list of features
+
+    AdminUserInput:
+      type: object
+      required:
+        - FirstName
+        - LastName
+        - Email
+      properties:
+        FirstName:
+          type: string
+        MiddleName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+          format: email
+        Password:
+          type: string
+          format: password
+        DateOfBirth:
+          type: string
+          format: date
+        PhoneNumber:
+          type: string
+        MailingAddress:
+          type: string
+        Role:
+          type: string
+          enum: [user, admin]
+          default: user
+        AccountStatus:
+          type: string
+          enum: [active, inactive, suspended]
+          default: active
+        MFA_Enabled:
+          type: string
+          enum: ['true', 'false']
+        SocialSecurityNumber:
+          type: string
+        profilePictureFile:
+          type: string
+          format: binary
+          description: Profile picture file (JPEG, PNG, GIF, WebP, max 50MB)
+
+    ChatMessage:
+      type: object
+      properties:
+        UniqueId:
+          type: string
+        ConversationId:
+          type: string
+        FromUserId:
+          type: string
+        ToUserId:
+          type: string
+        MessageText:
+          type: string
+        IsRead:
+          type: boolean
+        ReadAt:
+          type: string
+          format: date-time
+        SentAt:
+          type: string
+          format: date-time
+        MessageType:
+          type: string
+          default: text
+        Attachments:
+          type: array
+          items:
+            type: string
+        sender:
+          type: object
+          properties:
+            FirstName:
+              type: string
+            LastName:
+              type: string
+            ProfilePicture:
+              type: string

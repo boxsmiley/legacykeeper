@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Connection - LegacyKeeper</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid var(--border-color);
+    }
+    .tab {
+      padding: 0.75rem 1.5rem;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 1rem;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+    .tab:hover {
+      color: var(--text-primary);
+    }
+    .tab.active {
+      color: var(--accent-primary);
+      border-bottom-color: var(--accent-primary);
+      font-weight: 600;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .entity-list {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 5px;
+      padding: 1rem;
+      background: var(--bg-tertiary);
+    }
+    .entity-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      background: var(--bg-secondary);
+      border-radius: 5px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .entity-item:hover {
+      border-color: var(--accent-primary);
+    }
+    .entity-item.selected {
+      border-color: var(--accent-primary);
+      background: rgba(74, 144, 226, 0.1);
+    }
+    .entity-item input[type="radio"] {
+      margin-right: 1rem;
+    }
+    .entity-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: bold;
+      color: white;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
+    .entity-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .entity-info {
+      flex: 1;
+    }
+    .entity-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+    .entity-details {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .empty-list {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-secondary);
+    }
+    .info-box {
+      background: rgba(74, 144, 226, 0.1);
+      border-left: 4px solid var(--accent-primary);
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 5px;
+    }
+    .permissions-section {
+      background: var(--bg-tertiary);
+      padding: 1.5rem;
+      border-radius: 5px;
+      margin: 1.5rem 0;
+    }
+    .permissions-section h3 {
+      margin-top: 0;
+      color: var(--accent-primary);
+    }
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: start;
+      gap: 0.75rem;
+    }
+    .checkbox-item input[type="checkbox"] {
+      margin-top: 0.25rem;
+    }
+    .checkbox-item label {
+      flex: 1;
+      cursor: pointer;
+    }
+    .checkbox-item .label-title {
+      font-weight: 600;
+      color: var(--text-primary);
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+    .checkbox-item .label-description {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container">
+    <%- include('../partials/alerts') %>
+
+    <div class="form-container" style="max-width: 800px;">
+      <h2 class="card-title">Add New Connection</h2>
+
+      <div class="info-box">
+        <p><strong>Connect with:</strong> Other users, your contacts, or contact groups to manage permissions and share information.</p>
+      </div>
+
+      <form action="/connections/add" method="POST" id="addConnectionForm">
+        <div class="tabs">
+          <button type="button" class="tab active" onclick="showTab('users')">
+            Users (<%= availableUsers.length %>)
+          </button>
+          <button type="button" class="tab" onclick="showTab('contacts')">
+            Contacts (<%= availableContacts.length %>)
+          </button>
+          <button type="button" class="tab" onclick="showTab('groups')">
+            Contact Groups (<%= availableGroups.length %>)
+          </button>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="users-tab" class="tab-content active">
+          <% if (availableUsers.length === 0) { %>
+            <div class="empty-list">
+              <p>No available users to connect with.</p>
+              <p style="font-size: 0.9rem;">All active users are already connected or you're the only user.</p>
+            </div>
+          <% } else { %>
+            <div class="entity-list">
+              <% availableUsers.forEach(user => { %>
+                <label class="entity-item" onclick="selectEntity(this)">
+                  <input type="radio" name="ConnectedEntityId" value="<%= user.UniqueId %>" data-type="user" required>
+                  <div class="entity-avatar">
+                    <% if (user.ProfilePicture) { %>
+                      <img src="<%= user.ProfilePicture %>" alt="<%= user.FirstName %>">
+                    <% } else { %>
+                      <%= user.FirstName.charAt(0) %><%= user.LastName ? user.LastName.charAt(0) : '' %>
+                    <% } %>
+                  </div>
+                  <div class="entity-info">
+                    <div class="entity-name"><%= user.FirstName %> <%= user.LastName %></div>
+                    <div class="entity-details"><%= user.Email %></div>
+                  </div>
+                </label>
+              <% }); %>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Contacts Tab -->
+        <div id="contacts-tab" class="tab-content">
+          <% if (availableContacts.length === 0) { %>
+            <div class="empty-list">
+              <p>No available contacts to connect with.</p>
+              <p style="font-size: 0.9rem;">All your contacts are already connected or you don't have any contacts yet.</p>
+              <a href="/contacts/new" class="btn btn-primary" style="margin-top: 1rem;">Add Contact</a>
+            </div>
+          <% } else { %>
+            <div class="entity-list">
+              <% availableContacts.forEach(contact => { %>
+                <label class="entity-item" onclick="selectEntity(this)">
+                  <input type="radio" name="ConnectedEntityId" value="<%= contact.UniqueId %>" data-type="contact" required>
+                  <div class="entity-avatar">
+                    <%= contact.FirstName.charAt(0) %><%= contact.LastName ? contact.LastName.charAt(0) : '' %>
+                  </div>
+                  <div class="entity-info">
+                    <div class="entity-name"><%= contact.FirstName %> <%= contact.LastName %></div>
+                    <div class="entity-details">
+                      <%= contact.Email || 'No email' %>
+                      <% if (contact.Relationship) { %> • <%= contact.Relationship %><% } %>
+                    </div>
+                  </div>
+                </label>
+              <% }); %>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Groups Tab -->
+        <div id="groups-tab" class="tab-content">
+          <% if (availableGroups.length === 0) { %>
+            <div class="empty-list">
+              <p>No available contact groups to connect with.</p>
+              <p style="font-size: 0.9rem;">All your groups are already connected or you don't have any groups yet.</p>
+              <a href="/contact-groups/new" class="btn btn-primary" style="margin-top: 1rem;">Create Group</a>
+            </div>
+          <% } else { %>
+            <div class="entity-list">
+              <% availableGroups.forEach(group => { %>
+                <label class="entity-item" onclick="selectEntity(this)">
+                  <input type="radio" name="ConnectedEntityId" value="<%= group.UniqueId %>" data-type="contact_group" required>
+                  <div class="entity-avatar">
+                    <%= group.GroupName.charAt(0) %>
+                  </div>
+                  <div class="entity-info">
+                    <div class="entity-name"><%= group.GroupName %></div>
+                    <div class="entity-details">
+                      <%= group.Members ? group.Members.length : 0 %> members
+                      <% if (group.Description) { %> • <%= group.Description.substring(0, 50) %><% } %>
+                    </div>
+                  </div>
+                </label>
+              <% }); %>
+            </div>
+          <% } %>
+        </div>
+
+        <input type="hidden" name="ConnectionType" id="ConnectionType" value="user">
+
+        <div class="form-group">
+          <label for="RelationshipType">Relationship Type (Optional):</label>
+          <select id="RelationshipType" name="RelationshipType" class="form-control">
+            <option value="">-- Select Relationship --</option>
+            <option value="Family">Family</option>
+            <option value="Friend">Friend</option>
+            <option value="Colleague">Colleague</option>
+            <option value="Business Partner">Business Partner</option>
+            <option value="Beneficiary">Beneficiary</option>
+            <option value="Executor">Executor</option>
+            <option value="Trustee">Trustee</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="Notes">Notes (Optional):</label>
+          <textarea id="Notes" name="Notes" class="form-control" rows="3" placeholder="Add any notes about this connection..."></textarea>
+        </div>
+
+        <div class="permissions-section">
+          <h3>Connection Permissions</h3>
+          <div class="checkbox-group">
+            <div class="checkbox-item">
+              <input type="checkbox" id="CanViewDocuments" name="CanViewDocuments">
+              <label for="CanViewDocuments">
+                <span class="label-title">Can View Documents</span>
+                <span class="label-description">Allow this connection to view your documents</span>
+              </label>
+            </div>
+
+            <div class="checkbox-item">
+              <input type="checkbox" id="CanViewAssets" name="CanViewAssets">
+              <label for="CanViewAssets">
+                <span class="label-title">Can View Assets</span>
+                <span class="label-description">Allow this connection to view your digital and financial assets</span>
+              </label>
+            </div>
+
+            <div class="checkbox-item">
+              <input type="checkbox" id="NotifyOnUpdates" name="NotifyOnUpdates" checked>
+              <label for="NotifyOnUpdates">
+                <span class="label-title">Notify on Updates</span>
+                <span class="label-description">Send notifications when you make updates to shared information</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+          <button type="submit" class="btn btn-primary">Add Connection</button>
+          <a href="/connections" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function showTab(tabName) {
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+
+      // Show selected tab
+      document.getElementById(tabName + '-tab').classList.add('active');
+      event.target.classList.add('active');
+
+      // Clear all radio selections
+      document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.checked = false;
+      });
+
+      // Clear entity selections
+      document.querySelectorAll('.entity-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+
+      // Update connection type
+      document.getElementById('ConnectionType').value = tabName === 'users' ? 'user' : tabName === 'contacts' ? 'contact' : 'contact_group';
+    }
+
+    function selectEntity(element) {
+      // Remove selected class from all items
+      document.querySelectorAll('.entity-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+
+      // Add selected class to clicked item
+      element.classList.add('selected');
+
+      // Update connection type based on selected radio
+      const radio = element.querySelector('input[type="radio"]');
+      if (radio) {
+        document.getElementById('ConnectionType').value = radio.dataset.type;
+      }
+    }
+
+    // Form validation
+    document.getElementById('addConnectionForm').addEventListener('submit', function(e) {
+      const selectedEntity = document.querySelector('input[name="ConnectedEntityId"]:checked');
+
+      if (!selectedEntity) {
+        e.preventDefault();
+        alert('Please select a user, contact, or group to connect with.');
+        return false;
+      }
+    });
+
+    // Initialize - set connection type based on active tab
+    document.addEventListener('DOMContentLoaded', function() {
+      const activeTab = document.querySelector('.tab.active');
+      if (activeTab.textContent.includes('Users')) {
+        document.getElementById('ConnectionType').value = 'user';
+      }
+    });
+  </script>
+</body>
+</html>
