@@ -25,6 +25,9 @@ const legacyEntryRoutes = require('./routes/legacyEntries');
 const auditLogRoutes = require('./routes/auditLogs');
 const subscriptionRoutes = require('./routes/subscriptions');
 const subscriptionPlanRoutes = require('./routes/subscriptionPlans');
+const connectionsRoutes = require('./routes/connections');
+const apiTokenRoutes = require('./routes/apiTokens');
+const executorNotificationsRoutes = require('./routes/executorNotifications');
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -76,6 +79,19 @@ app.use('/legacy-entries', legacyEntryRoutes);
 app.use('/audit-logs', auditLogRoutes);
 app.use('/subscriptions', subscriptionRoutes);
 app.use('/subscription-plans', subscriptionPlanRoutes);
+app.use('/connections', connectionsRoutes);
+app.use('/api-tokens', apiTokenRoutes);
+app.use('/executor-notifications', executorNotificationsRoutes.router);
+
+// API Documentation route
+app.get('/api-docs', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'api-docs.html'));
+});
+
+// Serve OpenAPI spec
+app.get('/openapi.yaml', (req, res) => {
+  res.sendFile(path.join(__dirname, 'openapi.yaml'));
+});
 
 // Home route
 app.get('/', (req, res) => {

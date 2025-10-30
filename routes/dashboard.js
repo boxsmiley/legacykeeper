@@ -13,6 +13,11 @@ router.get('/', async (req, res) => {
   // Get full user details
   const userDetails = await db.findById('users.json', userId);
 
+  console.log('=== DASHBOARD DEBUG ===');
+  console.log('UserDetails:', userDetails);
+  console.log('Has MailingAddress:', userDetails && userDetails.MailingAddress);
+  console.log('MailingAddress value:', userDetails ? userDetails.MailingAddress : 'userDetails is null');
+
   // Get user's items
   const documents = await db.findByField('documents.json', 'OwnerUser', userId);
   const contacts = await db.findByField('contacts.json', 'OwnerUser', userId);

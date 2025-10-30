@@ -5,14 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - LegacyKeeper</title>
   <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin=""></script>
   <style>
     #map {
       height: 400px;
       width: 100%;
       border-radius: 10px;
       margin-top: 1rem;
+      background-color: #e0e0e0;
+      border: 2px solid #ccc;
     }
     .user-profile-card {
       background: var(--bg-secondary);
@@ -61,24 +67,7 @@
   </style>
 </head>
 <body>
-  <nav class="navbar">
-    <div class="container">
-      <a href="/dashboard" class="navbar-brand">LegacyKeeper</a>
-      <ul class="navbar-nav">
-        <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
-        <li><a href="/documents" class="nav-link">Documents</a></li>
-        <li><a href="/contacts" class="nav-link">Contacts</a></li>
-        <li><a href="/contact-groups" class="nav-link">Groups</a></li>
-        <li><a href="/digital-assets" class="nav-link">Digital Assets</a></li>
-        <li><a href="/financial-assets" class="nav-link">Financial Assets</a></li>
-        <% if (user.Role === 'admin') { %>
-          <li><a href="/admin/users" class="nav-link">Admin</a></li>
-        <% } %>
-        <li><span class="nav-link">Welcome, <%= user.FirstName %></span></li>
-        <li><a href="/logout" class="nav-link">Logout</a></li>
-      </ul>
-    </div>
-  </nav>
+  <%- include('../partials/navbar') %>
 
   <div class="container">
     <% if (typeof success_msg !== 'undefined' && success_msg.length > 0) { %>
@@ -174,48 +163,82 @@
 
   <% if (userDetails && userDetails.MailingAddress) { %>
     <script>
-      // Initialize the map
-      const map = L.map('map').setView([37.7749, -122.4194], 13); // Default to San Francisco
+      console.log('=== MAP DEBUG ===');
+      console.log('Leaflet loaded:', typeof L !== 'undefined');
+      console.log('Address:', <%- JSON.stringify(userDetails.MailingAddress) %>);
 
-      // Add OpenStreetMap tiles
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19
-      }).addTo(map);
-
-      // Geocode the address using Nominatim (OpenStreetMap's geocoding service)
-      const address = '<%= userDetails.MailingAddress.replace(/'/g, "\\'") %>';
-
-      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
-        .then(response => response.json())
-        .then(data => {
-          if (data && data.length > 0) {
-            const lat = parseFloat(data[0].lat);
-            const lon = parseFloat(data[0].lon);
-
-            // Center map on the address
-            map.setView([lat, lon], 15);
-
-            // Add a marker
-            L.marker([lat, lon])
-              .addTo(map)
-              .bindPopup('<b>Your Location</b><br>' + address)
-              .openPopup();
-          } else {
-            // If geocoding fails, show a message
-            document.getElementById('map').innerHTML =
-              '<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: var(--bg-tertiary); border-radius: 10px;">' +
-              '<p style="color: var(--text-secondary);">Unable to locate address on map. Please update your address in your profile.</p>' +
-              '</div>';
-          }
-        })
-        .catch(error => {
-          console.error('Geocoding error:', error);
+      try {
+        // Check if Leaflet is loaded
+        if (typeof L === 'undefined') {
+          console.error('Leaflet library not loaded!');
           document.getElementById('map').innerHTML =
             '<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: var(--bg-tertiary); border-radius: 10px;">' +
-            '<p style="color: var(--text-secondary);">Map could not be loaded. Please check your internet connection.</p>' +
+            '<p style="color: var(--text-secondary);">Map library failed to load. Please refresh the page.</p>' +
             '</div>';
-        });
+          throw new Error('Leaflet not loaded');
+        }
+
+        console.log('Initializing map...');
+        // Initialize the map
+        const map = L.map('map').setView([37.7749, -122.4194], 13); // Default to San Francisco
+        console.log('Map initialized');
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19
+        }).addTo(map);
+        console.log('Tiles added');
+
+        // Geocode the address using Nominatim (OpenStreetMap's geocoding service)
+        const address = <%- JSON.stringify(userDetails.MailingAddress) %>;
+        console.log('Fetching geocode for:', address);
+
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+          .then(response => {
+            console.log('Geocode response status:', response.status);
+            return response.json();
+          })
+          .then(data => {
+            console.log('Geocode data:', data);
+            if (data && data.length > 0) {
+              const lat = parseFloat(data[0].lat);
+              const lon = parseFloat(data[0].lon);
+              console.log('Coordinates:', lat, lon);
+
+              // Center map on the address
+              map.setView([lat, lon], 15);
+
+              // Add a marker
+              L.marker([lat, lon])
+                .addTo(map)
+                .bindPopup('<b>Your Location</b><br>' + address)
+                .openPopup();
+
+              console.log('Map rendered successfully');
+            } else {
+              console.warn('No geocode results found');
+              // If geocoding fails, show a message
+              document.getElementById('map').innerHTML =
+                '<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: var(--bg-tertiary); border-radius: 10px;">' +
+                '<p style="color: var(--text-secondary);">Unable to locate address on map. Please update your address in your profile.</p>' +
+                '</div>';
+            }
+          })
+          .catch(error => {
+            console.error('Geocoding error:', error);
+            document.getElementById('map').innerHTML =
+              '<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: var(--bg-tertiary); border-radius: 10px;">' +
+              '<p style="color: var(--text-secondary);">Map could not be loaded. Error: ' + error.message + '</p>' +
+              '</div>';
+          });
+      } catch (error) {
+        console.error('Map initialization error:', error);
+        document.getElementById('map').innerHTML =
+          '<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: var(--bg-tertiary); border-radius: 10px;">' +
+          '<p style="color: var(--text-secondary);">Map initialization failed: ' + error.message + '</p>' +
+          '</div>';
+      }
     </script>
   <% } %>
 </body>

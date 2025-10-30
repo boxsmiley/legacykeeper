@@ -1,25 +1,37 @@
 <nav class="navbar">
   <div class="container">
     <a href="/dashboard" class="navbar-brand">LegacyKeeper</a>
-    <ul class="navbar-nav">
+
+    <!-- Hamburger Menu Button -->
+    <button class="navbar-hamburger" id="navbarToggle" aria-label="Toggle navigation">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+
+    <!-- Navigation Menu -->
+    <ul class="navbar-nav" id="navbarMenu">
       <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
       <li><a href="/messages" class="nav-link">Messages</a></li>
       <li><a href="/chat" class="nav-link">Chat</a></li>
       <li><a href="/documents" class="nav-link">Documents</a></li>
       <li><a href="/contacts" class="nav-link">Contacts</a></li>
       <li><a href="/contact-groups" class="nav-link">Groups</a></li>
-      <li><a href="/digital-assets" class="nav-link">Digital</a></li>
-      <li><a href="/financial-assets" class="nav-link">Financial</a></li>
-      <li><a href="/legacy-entries" class="nav-link">Legacy</a></li>
+      <li><a href="/connections" class="nav-link">Connections</a></li>
+      <li><a href="/digital-assets" class="nav-link">Digital Assets</a></li>
+      <li><a href="/financial-assets" class="nav-link">Financial Assets</a></li>
+      <li><a href="/legacy-entries" class="nav-link">Legacy Entries</a></li>
       <li><a href="/subscriptions" class="nav-link">Plans</a></li>
       <li><a href="/audit-logs" class="nav-link">Activity</a></li>
+      <li><a href="/api-tokens" class="nav-link">API Tokens</a></li>
+      <li><a href="/api-docs" class="nav-link" style="color: #6eb5ff;">API Docs</a></li>
       <% if (typeof user !== 'undefined' && user && user.Role === 'admin') { %>
-        <li><a href="/admin/users" class="nav-link">Users</a></li>
-        <li><a href="/subscription-plans" class="nav-link">Pricing</a></li>
+        <li><a href="/admin/users" class="nav-link">Admin Users</a></li>
+        <li><a href="/subscription-plans" class="nav-link">Pricing Plans</a></li>
       <% } %>
       <% if (typeof user !== 'undefined' && user) { %>
         <li class="nav-user-section">
-          <a href="/profile" style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+          <a href="/profile" class="nav-profile-link" style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none;">
             <% if (user.ProfilePicture) { %>
               <img src="<%= user.ProfilePicture %>" alt="Avatar" class="nav-avatar">
             <% } else { %>
@@ -30,8 +42,41 @@
             <span class="nav-link"><%= user.FirstName %></span>
           </a>
         </li>
+        <li><a href="/profile/edit" class="nav-link">Edit Profile</a></li>
         <li><a href="/logout" class="nav-link">Logout</a></li>
       <% } %>
     </ul>
   </div>
 </nav>
+
+<script>
+// Hamburger menu toggle functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const navbarToggle = document.getElementById('navbarToggle');
+  const navbarMenu = document.getElementById('navbarMenu');
+
+  if (navbarToggle && navbarMenu) {
+    navbarToggle.addEventListener('click', function() {
+      navbarMenu.classList.toggle('active');
+      navbarToggle.classList.toggle('active');
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!navbarToggle.contains(event.target) && !navbarMenu.contains(event.target)) {
+        navbarMenu.classList.remove('active');
+        navbarToggle.classList.remove('active');
+      }
+    });
+
+    // Close menu when clicking on a link
+    const navLinks = navbarMenu.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+      link.addEventListener('click', function() {
+        navbarMenu.classList.remove('active');
+        navbarToggle.classList.remove('active');
+      });
+    });
+  }
+});
+</script>

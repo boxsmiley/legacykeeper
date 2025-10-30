@@ -122,7 +122,7 @@ router.post('/update', upload.single('profilePicture'), async (req, res) => {
       updates.PasswordHash = await bcrypt.hash(newPassword, 10);
     }
 
-    db.update('users.json', req.session.user.UniqueId, updates);
+    await db.update('users.json', req.session.user.UniqueId, updates);
 
     // Update session
     req.session.user.FirstName = updates.FirstName;
@@ -163,7 +163,7 @@ router.post('/disconnect/facebook', async (req, res) => {
       network => network.platform !== 'facebook'
     );
 
-    db.update('users.json', req.session.user.UniqueId, {
+    await db.update('users.json', req.session.user.UniqueId, {
       SocialNetworks: updatedSocialNetworks
     });
 

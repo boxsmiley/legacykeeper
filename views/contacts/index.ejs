@@ -25,13 +25,14 @@
             <th>Email</th>
             <th>Phone</th>
             <th>Relationship</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <% if (contacts.length === 0) { %>
             <tr>
-              <td colspan="5" style="text-align: center;">No contacts found. Add your first contact!</td>
+              <td colspan="6" style="text-align: center;">No contacts found. Add your first contact!</td>
             </tr>
           <% } else { %>
             <% contacts.forEach(contact => { %>
@@ -41,9 +42,19 @@
                 <td><%= contact.PhoneNumber || 'N/A' %></td>
                 <td><%= contact.Relationship || 'N/A' %></td>
                 <td>
+                  <% if (contact.AssociatedUserAccount && contact.AssociatedUserAccount.trim() !== '') { %>
+                    <span style="color: var(--success-color); font-weight: 600;">✓ User Account</span>
+                  <% } else { %>
+                    <span style="color: var(--text-secondary);">Contact Only</span>
+                  <% } %>
+                </td>
+                <td>
                   <div class="action-buttons">
                     <a href="/contacts/<%= contact.UniqueId %>/edit" class="btn btn-secondary btn-small">Edit</a>
-                    <form action="/contacts/<%= contact.UniqueId %>?_method=DELETE" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure?');">
+                    <% if (!contact.AssociatedUserAccount || contact.AssociatedUserAccount.trim() === '') { %>
+                      <a href="/contacts/<%= contact.UniqueId %>/convert-to-user" class="btn btn-primary btn-small" title="Convert this contact to a user account">Convert to User</a>
+                    <% } %>
+                    <form action="/contacts/<%= contact.UniqueId %>?_method=DELETE" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this contact?');">
                       <button type="submit" class="btn btn-danger btn-small">Delete</button>
                     </form>
                   </div>

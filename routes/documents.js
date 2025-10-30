@@ -44,7 +44,15 @@ router.use(ensureAuthenticated);
 
 // List documents
 router.get('/', async (req, res) => {
-  const documents = await db.findByField('documents.json', 'OwnerUser', req.session.user.UniqueId);
+  const user = req.user || req.session.user;
+  const documents = await db.findByField('documents.json', 'OwnerUser', user.UniqueId);
+
+  // For API requests, return JSON
+  if (req.isApiAuth || req.headers.accept === 'application/json') {
+    return res.json({ documents });
+  }
+
+  // For web requests, render view
   res.render('documents/index', { documents });
 });
 

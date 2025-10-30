@@ -40,14 +40,17 @@ body {
 /* Navigation */
 .navbar {
   background-color: var(--bg-secondary);
-  padding: 1rem 2rem;
+  padding: 0.8rem 1rem;
   border-bottom: 2px solid var(--border-color);
+  position: relative;
 }
 
 .navbar .container {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+  max-width: 100%;
 }
 
 .navbar-brand {
@@ -55,19 +58,79 @@ body {
   font-weight: bold;
   color: var(--accent-primary);
   text-decoration: none;
+  z-index: 1001;
+}
+
+/* Hamburger Menu Button */
+.navbar-hamburger {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 1001;
+}
+
+.hamburger-line {
+  width: 25px;
+  height: 3px;
+  background-color: var(--text-primary);
+  transition: all 0.3s ease;
+  border-radius: 3px;
+}
+
+.navbar-hamburger.active .hamburger-line:nth-child(1) {
+  transform: rotate(45deg) translate(8px, 8px);
+}
+
+.navbar-hamburger.active .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.navbar-hamburger.active .hamburger-line:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
 }
 
 .navbar-nav {
-  display: flex;
+  position: fixed;
+  top: 0;
+  right: -100%;
+  height: 100vh;
+  width: 280px;
+  background-color: var(--bg-secondary);
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 5rem 2rem 2rem 2rem;
+  gap: 1.5rem;
+  transition: right 0.3s ease;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  overflow-y: auto;
   list-style: none;
-  gap: 2rem;
-  align-items: center;
+  margin: 0;
+  display: flex;
+}
+
+.navbar-nav.active {
+  right: 0;
+}
+
+.navbar-nav li {
+  width: 100%;
+  white-space: nowrap;
+  margin: 0;
 }
 
 .nav-link {
   color: var(--text-primary);
   text-decoration: none;
   transition: color 0.3s;
+  font-size: 1rem;
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0;
 }
 
 .nav-link:hover {
@@ -76,9 +139,17 @@ body {
 
 /* User Avatar in Navbar */
 .nav-user-section {
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border-color);
   display: flex;
-  align-items: center;
   gap: 1rem;
+}
+
+.nav-user-section a {
+  width: 100%;
 }
 
 .nav-avatar {
@@ -101,6 +172,13 @@ body {
   font-weight: bold;
   color: white;
   border: 2px solid var(--accent-primary);
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+  .navbar-nav {
+    width: 240px;
+  }
 }
 
 /* Buttons */

@@ -11,7 +11,9 @@
       "Bash(redis-cli:*)",
       "Bash(/home/william/legacykeeper/scripts/fix-async-routes.sh:*)",
       "Bash(/home/william/legacykeeper/scripts/fix-async-signatures.sh:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(kill:*)"
     ],
     "deny": [],
     "ask": []

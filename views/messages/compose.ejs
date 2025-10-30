@@ -18,14 +18,25 @@
       <form action="/messages/send" method="POST">
         <div class="form-group">
           <label for="ToUserId">To: *</label>
-          <select id="ToUserId" name="ToUserId" class="form-control" required>
-            <option value="">Select recipient</option>
-            <% users.forEach(user => { %>
-              <option value="<%= user.UniqueId %>" <%= recipientId === user.UniqueId ? 'selected' : '' %>>
-                <%= user.FirstName %> <%= user.LastName %> (<%= user.Email %>)
-              </option>
-            <% }); %>
-          </select>
+          <% if (typeof bulkEmail !== 'undefined' && bulkEmail) { %>
+            <select id="ToUserId" name="ToUserId" class="form-control" multiple size="10" required style="height: auto;">
+              <% users.forEach(user => { %>
+                <option value="<%= user.UniqueId %>" selected>
+                  <%= user.FirstName %> <%= user.LastName %> (<%= user.Email %>)
+                </option>
+              <% }); %>
+            </select>
+            <small class="form-text text-muted">All users are pre-selected. Hold Ctrl/Cmd to select/deselect specific recipients.</small>
+          <% } else { %>
+            <select id="ToUserId" name="ToUserId" class="form-control" required>
+              <option value="">Select recipient</option>
+              <% users.forEach(user => { %>
+                <option value="<%= user.UniqueId %>" <%= recipientId === user.UniqueId ? 'selected' : '' %>>
+                  <%= user.FirstName %> <%= user.LastName %> (<%= user.Email %>)
+                </option>
+              <% }); %>
+            </select>
+          <% } %>
         </div>
 
         <div class="form-group">

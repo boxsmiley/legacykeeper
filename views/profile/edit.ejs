@@ -55,11 +55,15 @@
 
         <div class="form-group">
           <label for="profilePicture">Profile Picture</label>
-          <% if (user.ProfilePicture) { %>
-            <div style="margin-bottom: 1rem;">
-              <img src="<%= user.ProfilePicture %>" alt="Current profile picture" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
-            </div>
-          <% } %>
+          <div style="margin-bottom: 1rem;">
+            <img id="profilePicturePreview" src="<%= user.ProfilePicture || '' %>" alt="Profile picture preview"
+                 style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; <%= user.ProfilePicture ? '' : 'display: none;' %>">
+            <% if (!user.ProfilePicture) { %>
+              <div id="profilePicturePlaceholder" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; color: white;">
+                <%= user.FirstName.charAt(0) %><%= user.LastName ? user.LastName.charAt(0) : '' %>
+              </div>
+            <% } %>
+          </div>
           <input type="file" id="profilePicture" name="profilePicture" class="form-control" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
           <small style="color: var(--text-secondary);">Accepted formats: JPEG, PNG, GIF, WebP (Max 5MB)</small>
         </div>
@@ -89,5 +93,61 @@
       </form>
     </div>
   </div>
+
+  <script>
+    // Profile picture preview and auto-upload functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const profilePictureInput = document.getElementById('profilePicture');
+      const profilePicturePreview = document.getElementById('profilePicturePreview');
+      const profilePicturePlaceholder = document.getElementById('profilePicturePlaceholder');
+      const form = profilePictureInput.closest('form');
+
+      profilePictureInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+
+        if (file) {
+          // Validate file type
+          const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+          if (!allowedTypes.includes(file.type)) {
+            alert('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
+            profilePictureInput.value = '';
+            return;
+          }
+
+          // Validate file size (5MB)
+          if (file.size > 5 * 1024 * 1024) {
+            alert('File size must be less than 5MB');
+            profilePictureInput.value = '';
+            return;
+          }
+
+          // Show preview
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            profilePicturePreview.src = event.target.result;
+            profilePicturePreview.style.display = 'block';
+            if (profilePicturePlaceholder) {
+              profilePicturePlaceholder.style.display = 'none';
+            }
+          };
+          reader.readAsDataURL(file);
+
+          // Automatically submit the form after a short delay to show the preview
+          setTimeout(function() {
+            if (confirm('Upload this profile picture? The form will be saved with your current information.')) {
+              form.submit();
+            } else {
+              // Reset if user cancels
+              profilePictureInput.value = '';
+              if (profilePicturePlaceholder) {
+                profilePicturePreview.style.display = 'none';
+                profilePicturePlaceholder.style.display = 'flex';
+              }
+            }
+          }, 500);
+        }
+      });
+    });
+  </script>
 </body>
 </html>

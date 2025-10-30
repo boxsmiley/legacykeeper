@@ -33,6 +33,35 @@ router.post('/', async (req, res) => {
   res.redirect('/contact-groups');
 });
 
+// View contact group
+router.get('/:id', async (req, res) => {
+  try {
+    const contactGroup = await db.findById('contact_groups.json', req.params.id);
+    if (!contactGroup || contactGroup.OwnerUser !== req.session.user.UniqueId) {
+      req.flash('error_msg', 'Contact group not found');
+      return res.redirect('/contact-groups');
+    }
+
+    // Get member details
+    const allContacts = await db.findAll('contacts.json');
+    const memberDetails = [];
+    if (contactGroup.Members && Array.isArray(contactGroup.Members)) {
+      contactGroup.Members.forEach(memberId => {
+        const contact = allContacts.find(c => c.UniqueId === memberId);
+        if (contact) {
+          memberDetails.push(contact);
+        }
+      });
+    }
+
+    res.render('contactGroups/view', { contactGroup, memberDetails });
+  } catch (error) {
+    console.error('Error viewing contact group:', error);
+    req.flash('error_msg', 'Error loading contact group');
+    res.redirect('/contact-groups');
+  }
+});
+
 // Edit contact group form
 router.get('/:id/edit', async (req, res) => {
   const contactGroup = await db.findById('contact_groups.json', req.params.id);
